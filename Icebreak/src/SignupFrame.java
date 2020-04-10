@@ -41,6 +41,13 @@ public class SignupFrame extends JFrame {
 	private static String error = "Not found";
 	private static Date dateCreated;
 	private static Time timeCreated;
+	private static String preference;
+	private static String interest;
+	private static String interestType;
+	private static String[] prefList = { "M", "F", "O", "M/F", "M/O", "F/O", "M/F/O", "NULL"};
+	private static String[] interestTypeList = {"sport", "others"};
+	private static String[][] interestList = {{"football", "pingpong", "baseball"},
+            {"reading", "dancing", "drawing"}};
 	public SignupFrame(String title) {
 		super(title);
 		Container pane = getContentPane();
@@ -55,6 +62,8 @@ public class SignupFrame extends JFrame {
 	    pane.add(createPasswordPanel());
 	    pane.add(createBrowseButton());
 	    pane.add(createLocationPanel());
+	    pane.add(createPreferencePanel());
+	    pane.add(createInterestPanel());
 	    
 	    pane.add(createDoneButton());
 	    pane.add(createCancelButton());		
@@ -76,6 +85,56 @@ public class SignupFrame extends JFrame {
 	    genderPane.add(lbl);
 	    genderPane.add(genderDDM);	
 	    return genderPane;
+	}
+	
+	private static Container createPreferencePanel() {
+		Container preferencePane = new Container();
+		preferencePane.setLayout(new BoxLayout(preferencePane, BoxLayout.X_AXIS));
+	    JLabel lbl = new JLabel("Preference: ");
+	    final JComboBox<String> perferenceDDM = new JComboBox<String>(prefList);
+	    perferenceDDM.addActionListener(new ActionListener() {
+
+		    @Override
+		    public void actionPerformed(ActionEvent e) {
+		    	preference = perferenceDDM.getSelectedItem().toString();
+		    }
+		});
+	    preferencePane.add(lbl);
+	    preferencePane.add(perferenceDDM);	
+	    return preferencePane;
+	}
+	
+	private static Container createInterestPanel() {
+		Container interestPane = new Container();
+		interestPane.setLayout(new BoxLayout(interestPane, BoxLayout.X_AXIS));
+	    JLabel lbl = new JLabel("Interest type: ");
+	    JLabel lbl2 = new JLabel("Interest: ");
+	    final JComboBox<String> typeDDM = new JComboBox<String>(interestTypeList);
+	    final JComboBox<String> interestDDM = new JComboBox<String>(interestList[0]);
+	    typeDDM.addActionListener(new ActionListener() {
+
+		    @Override
+		    public void actionPerformed(ActionEvent e) {
+		    	interestType = typeDDM.getSelectedItem().toString();
+		    	interestDDM.removeAllItems();
+		    	for (int i = 0; i < interestList[typeDDM.getSelectedIndex()].length; i++) {
+			    	interestDDM.addItem(interestList[typeDDM.getSelectedIndex()][i]);
+		    	}
+		    }
+		});
+	    interestDDM.addActionListener(new ActionListener() {
+
+		    @Override
+		    public void actionPerformed(ActionEvent e) {
+		    	if (interestDDM.getItemCount() > 0)
+		    		interest = interestDDM.getSelectedItem().toString();
+		    }
+		});
+	    interestPane.add(lbl);
+	    interestPane.add(typeDDM);	
+	    interestPane.add(lbl2);
+	    interestPane.add(interestDDM);	
+	    return interestPane;
 	}
 	
 	private static Container createBirthDatePanel() {
