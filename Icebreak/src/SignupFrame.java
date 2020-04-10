@@ -10,6 +10,8 @@ import java.sql.Date;
 import java.sql.Time;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -64,6 +66,13 @@ public class SignupFrame extends JFrame {
 	    JLabel lbl = new JLabel("Gender: ");
 	    String[] choices = { "Female","Male"};
 	    final JComboBox<String> genderDDM = new JComboBox<String>(choices);
+	    genderDDM.addActionListener(new ActionListener() {
+
+		    @Override
+		    public void actionPerformed(ActionEvent e) {
+		    	gender = genderDDM.getSelectedItem().toString();
+		    }
+		});
 	    genderPane.add(lbl);
 	    genderPane.add(genderDDM);	
 	    return genderPane;
@@ -80,7 +89,7 @@ public class SignupFrame extends JFrame {
 		{
 			public void keyPressed(KeyEvent e)
 			{
-				birthDate = java.sql.Date.valueOf(dateTextField.getText());
+				
 			}
 
 			@Override
@@ -91,7 +100,12 @@ public class SignupFrame extends JFrame {
 
 			@Override
 			public void keyReleased(KeyEvent e) {
-				// TODO Auto-generated method stub
+				try{
+					birthDate = java.sql.Date.valueOf(dateTextField.getText());
+				}
+				catch (Exception ex) {
+					
+				}
 				
 			}
 		});
@@ -113,7 +127,7 @@ public class SignupFrame extends JFrame {
 		{
 			public void keyPressed(KeyEvent e)
 			{
-				name = nameField.getText();
+
 			}
 
 			@Override
@@ -125,7 +139,7 @@ public class SignupFrame extends JFrame {
 			@Override
 			public void keyReleased(KeyEvent e) {
 				// TODO Auto-generated method stub
-				
+				name = nameField.getText();				
 			}
 		});
 		
@@ -148,7 +162,7 @@ public class SignupFrame extends JFrame {
 		{
 			public void keyPressed(KeyEvent e)
 			{
-				email = emailField.getText();
+
 			}
 
 			@Override
@@ -160,7 +174,7 @@ public class SignupFrame extends JFrame {
 			@Override
 			public void keyReleased(KeyEvent e) {
 				// TODO Auto-generated method stub
-				
+				email = emailField.getText();				
 			}
 		});
 		
@@ -183,7 +197,7 @@ public class SignupFrame extends JFrame {
 		{
 			public void keyPressed(KeyEvent e)
 			{
-				password = passwordField.getText();
+
 			}
 
 			@Override
@@ -195,7 +209,7 @@ public class SignupFrame extends JFrame {
 			@Override
 			public void keyReleased(KeyEvent e) {
 				// TODO Auto-generated method stub
-				
+				password = passwordField.getText();				
 			}
 		});
 		
@@ -233,9 +247,9 @@ public class SignupFrame extends JFrame {
 
 		if (returnValue == JFileChooser.APPROVE_OPTION) {
 			File selectedFile = jfc.getSelectedFile();
-			path = selectedFile.getAbsolutePath();
+			ppPath = selectedFile.getAbsolutePath();
 		}
-		return path;
+		return ppPath;
 	}
 	
 	private static Container createLocationPanel() {
@@ -249,7 +263,7 @@ public class SignupFrame extends JFrame {
 		{
 			public void keyPressed(KeyEvent e)
 			{
-				location = locationField.getText();
+
 			}
 
 			@Override
@@ -261,7 +275,7 @@ public class SignupFrame extends JFrame {
 			@Override
 			public void keyReleased(KeyEvent e) {
 				// TODO Auto-generated method stub
-				
+				location = locationField.getText();				
 			}
 		});
 		
@@ -297,7 +311,12 @@ public class SignupFrame extends JFrame {
 	
 	private static boolean createUserSQL(){
 		boolean success = true;
-		
+		DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		LocalDateTime now = LocalDateTime.now();
+		dateCreated = java.sql.Date.valueOf(format.format(now));
+		format = DateTimeFormatter.ofPattern("HH:mm:ss");
+		timeCreated = java.sql.Time.valueOf(format.format(now));
+
 		//TODO
 		
 		error = "duplicated user"; //TODO do like this
