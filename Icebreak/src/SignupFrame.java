@@ -22,9 +22,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.JToggleButton;
-import javax.swing.SwingUtilities;
+//import javax.swing.PlaceholderTextField;
 import javax.swing.filechooser.FileSystemView;
 
 public class SignupFrame extends JFrame {
@@ -137,8 +135,8 @@ public class SignupFrame extends JFrame {
 	    return interestPane;
 	}
 	
-	private static Container createBirthDatePanel() {
-		Container birthContainer = new Container();
+	private static JPanel createBirthDatePanel() {
+		JPanel birthContainer = new JPanel();
 		birthContainer.setLayout(new BoxLayout(birthContainer, BoxLayout.X_AXIS));
 	    JLabel lbl = new JLabel("Date of birth (yyyy-MM-dd): ");
 		DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
@@ -180,7 +178,7 @@ public class SignupFrame extends JFrame {
 		Container cont = new Container();
 		cont.setLayout(new BoxLayout(cont, BoxLayout.X_AXIS));
 	    JLabel lbl = new JLabel("Name: ");
-		JTextField nameField = new JTextField("Name", 15);
+		PlaceholderTextField nameField = new PlaceholderTextField("Name", 15);
 		nameField.setColumns(15);
 		nameField.addKeyListener(new KeyListener()
 		{
@@ -283,18 +281,19 @@ public class SignupFrame extends JFrame {
 	private static Container createBrowseButton() {
 		Container cont = new Container();
 		cont.setLayout(new BoxLayout(cont, BoxLayout.X_AXIS));
-	    JLabel lbl = new JLabel("Path: ");
-		JButton browseButton = new JButton("Browse");
-		browseButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+	    JLabel lbl = new JLabel("Profile Picture:");
+	    JLabel lbl2 = new JLabel("Not found");
+		JButton browseButton = new JButton("Browse...");
 		browseButton.addActionListener(new ActionListener() {
 
 		    @Override
 		    public void actionPerformed(ActionEvent e) {
-		    	lbl.setText(browseForPP());
+		    	lbl2.setText(browseForPP());
 		    }
 		});
-		cont.add(browseButton);
 		cont.add(lbl);
+		cont.add(browseButton);
+		cont.add(lbl2);
 		return cont;
 	}
 	

@@ -51,7 +51,7 @@ public class LoginFrame extends JFrame {
 		    @Override
 		    public void actionPerformed(ActionEvent e) {
 		    	JFrame frame = new SignupFrame("Icebreak");
-				frame.setSize(750, 500);
+				frame.setSize(750, 300);
 				frame.setResizable(false);
 				frame.setLocationRelativeTo(null);
 				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
