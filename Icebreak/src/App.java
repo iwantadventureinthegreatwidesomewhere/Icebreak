@@ -1,6 +1,7 @@
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import java.sql.*;
+import java.util.List;
 
 public class App {
 
@@ -77,7 +78,23 @@ public class App {
 		
 		public static int match() {
 			//return chatid
+			//should either scan existing matchmakers to see if 
 			return -1;
+		}
+		
+		public static List<Integer> getAllChats() {
+			//fetches all chatids of all connections with active chats
+			return null;
+		}
+		
+		public static void refreshChat() {
+			//not sure what to return, i'm thinking a new object that contains the conversation history and other chat details
+			//caller should use this method on loop as we don't have a notification system
+			//should also be used to load a previous existing conversation
+		}
+		
+		public static void sendMessage() {
+			//return success status
 		}
 		
 		public static void closeConnection() {
