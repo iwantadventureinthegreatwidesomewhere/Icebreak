@@ -1,4 +1,7 @@
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
 import javax.swing.*;
 
 public class LoginFrame extends JFrame {
@@ -43,6 +46,18 @@ public class LoginFrame extends JFrame {
 		JButton signupButton = new JButton("Sign Up");
 		signupButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         pane.add(signupButton);
+        signupButton.addActionListener(new ActionListener() {
+
+		    @Override
+		    public void actionPerformed(ActionEvent e) {
+		    	JFrame frame = new SignupFrame("Icebreak");
+				frame.setSize(750, 500);
+				frame.setResizable(false);
+				frame.setLocationRelativeTo(null);
+				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+				frame.setVisible(true);
+		    }
+		});
         
     }
 }

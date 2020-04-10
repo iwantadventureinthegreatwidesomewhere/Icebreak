@@ -7,6 +7,7 @@ public class App {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				JFrame frame = new LoginFrame("Icebreak");
+//				JFrame frame = new SignupFrame("Icebreak");
 				frame.setSize(750, 500);
 				frame.setResizable(false);
 				frame.setLocationRelativeTo(null);
