@@ -18,8 +18,8 @@ public class App {
 		
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				JFrame frame = new LoginFrame("Icebreak");
-//				JFrame frame = new MainFrame("Icebreak", 4000);
+//				JFrame frame = new LoginFrame("Icebreak");
+				JFrame frame = new MainFrame("Icebreak", 4000);
 				frame.setSize(750, 500);
 				frame.setResizable(false);
 				frame.setLocationRelativeTo(null);
@@ -90,7 +90,7 @@ public class App {
 				String sql;
 				sql = "INSERT INTO Users VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 				PreparedStatement preparedStatement = con.prepareStatement(sql);
-				preparedStatement.setInt(1, 4008);
+				preparedStatement.setInt(1, 500);
 				preparedStatement.setString(2, String.valueOf(gender));
 				preparedStatement.setDate(3, birthDate);
 				preparedStatement.setString(4, name);
@@ -132,8 +132,9 @@ public class App {
 				
 				if(matchedUsers.next()) {
 					//found a match
+//					int matchedUserid = matchedUsers.getInt("userid");
+
 					int matchedUserid = matchedUsers.getInt("userid");
-					
 					Random random = new Random();
 					int chatid = random.nextInt();
 					
@@ -164,12 +165,15 @@ public class App {
 							+ " (SELECT type FROM Likes WHERE userid = ?)";
 					preparedStatement = con.prepareStatement(sql);
 					preparedStatement.setInt(1, userid);
-					preparedStatement.setInt(1, matchedUserid);
+					preparedStatement.setInt(2, matchedUserid);
 					ResultSet rsInterest = preparedStatement.executeQuery();
-					
-					rsInterest.next();
-					String interest = rsInterest.getString("type");
-					
+
+					String interest = "";
+
+					if (rsInterest.next()) {
+						interest = rsInterest.getString("type");
+					}
+
 					//gets all subjects generated from the interest
 					stmt = con.createStatement();
 					sql = "SELECT subject FROM Generates WHERE type = ?";
@@ -177,16 +181,26 @@ public class App {
 					preparedStatement.setString(1, interest);
 					ResultSet rsTopics = preparedStatement.executeQuery();
 					
-					List<String> icebreakerTopics = new ArrayList<String>();
+					List<String> icebreakerTopics = new ArrayList<>();
 					
 					while(rsTopics.next()) {
 						icebreakerTopics.add(rsTopics.getString("subject"));
 					}
-					
+
 					//selects 3 random subjects from the list
 					Collections.shuffle(icebreakerTopics);
 					List<String> threeIcebreakerTopics = icebreakerTopics.stream().limit(3).collect(Collectors.toList());
-					
+//
+//					//inserts three conversations into Conversations
+					stmt = con.createStatement();
+					sql = "INSERT INTO conversations (chatid, conversation_number)"
+							+ " VALUES (?, 1), (?, 2), (?, 3)";
+					preparedStatement = con.prepareStatement(sql);
+					preparedStatement.setInt(1, chatid);
+					preparedStatement.setInt(2, chatid);
+					preparedStatement.setInt(3, chatid);
+					preparedStatement.executeUpdate();
+
 					//inserts the three icebreakers into the database 
 					stmt = con.createStatement();
 					sql = "INSERT INTO Icebreakers (chatid, conversation_number, subject, time_duration)"
@@ -274,6 +288,7 @@ public class App {
 				}
 			} catch (SQLException e) {
 				System.out.println("Error searching for a match");
+				e.printStackTrace();
 				return -1;
 			}
 		}
