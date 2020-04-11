@@ -165,6 +165,7 @@ public class App {
 					preparedStatement.setInt(4, matchedUserid);
 					preparedStatement.executeUpdate();
 					
+					System.out.println("Match was found");
 					return chatid;
 				}else {
 					//gets the old chats before attempting to find a match
@@ -227,11 +228,13 @@ public class App {
 					if(newNumberOfChats > oldNumberOfChats) {
 						for(Integer i : newChatids) {
 							if(!oldChatids.contains(i)) {
+								System.out.println("Match was made");
 								return i;
 							}
 						}
 					}
 					
+					System.out.println("No match was made");
 					return -1;
 				}
 			} catch (SQLException e) {
@@ -240,9 +243,31 @@ public class App {
 			}
 		}
 		
-		public static List<Integer> getAllChats() {
-			//fetches all chatids of all connections with active chats
-			return null;
+		public static List<Integer> getAllChats(int userid) {
+			try {
+				//gets the chats
+				Statement stmt;
+				String sql;
+				PreparedStatement preparedStatement;
+				
+				stmt = con.createStatement();
+				sql = "SELECT chatid FROM Participates WHERE userid = ?";
+				preparedStatement = con.prepareStatement(sql);
+				preparedStatement.setInt(1, userid);
+				ResultSet chats = preparedStatement.executeQuery();
+				
+				List<Integer> chatids = new ArrayList<Integer>();
+				
+				while(chats.next()) {
+					chatids.add(chats.getInt("chatid"));
+				}
+				
+				System.out.println("Successfully fetched all chats");
+				return chatids;
+			}catch (SQLException e) {
+				System.out.println("Error fetching all chats");
+				return null;
+			}
 		}
 		
 		public static void refreshChat() {
