@@ -368,7 +368,7 @@ public class SignupFrame extends JFrame {
 	}
 	
 	private static boolean createUserSQL(){
-		boolean success = true;
+		boolean success = false;
 		DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 		LocalDateTime now = LocalDateTime.now();
 		dateCreated = java.sql.Date.valueOf(format.format(now));
@@ -376,9 +376,15 @@ public class SignupFrame extends JFrame {
 		timeCreated = java.sql.Time.valueOf(format.format(now));
 
 		//TODO
-		
-		error = "duplicated user"; //TODO do like this
-		return success;
+		char sqlGender;
+		if (gender.equals("Female")) sqlGender = 'F';
+		else if (gender.equals("Male")) sqlGender = 'M';
+		else sqlGender = 'O';
+
+		return App.DatabaseManager.signup(sqlGender, birthDate, name, email, password,
+				dateCreated, timeCreated, 0, location);
+//		error = "duplicated user"; //TODO do like this
+//		return success;
 	}
 	
 }

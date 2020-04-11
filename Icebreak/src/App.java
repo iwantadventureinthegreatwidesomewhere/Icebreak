@@ -15,7 +15,7 @@ public class App {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				JFrame frame = new LoginFrame("Icebreak");
-				//JFrame frame = new MainFrame("Icebreak", "adsda");
+//				JFrame frame = new MainFrame("Icebreak", 4000);
 				frame.setSize(750, 500);
 				frame.setResizable(false);
 				frame.setLocationRelativeTo(null);
@@ -41,17 +41,17 @@ public class App {
 					
 					con = DriverManager.getConnection(url, username, password);
 					System.out.println("Successfully connected to database");
-				}catch(SQLException | ClassNotFoundException e) {
+				} catch(SQLException | ClassNotFoundException e) {
 					e.printStackTrace();
 					System.out.println("Error connecting to database");
 				}
-			}else {
+			} else {
 				System.out.println("Already connected to database");
 			}
 		}
 		
 		public static int login(String email, String password) {
-			if(!email.isBlank() && !email.isEmpty() && email != null && !password.isBlank() && !password.isEmpty() && password != null) {
+			if(!email.isBlank() && !email.isEmpty() && !password.isBlank() && !password.isEmpty()) {
 				try {
 					Statement stmt;
 					stmt = con.createStatement();
@@ -77,9 +77,43 @@ public class App {
 			return -1;
 		}
 		
-		public static boolean signup() {
-			//return success status
-			return false;
+		public static boolean signup(char gender, Date birthDate, String name, String email,
+									 String password, Date createDate, Time createTime,
+									 int profilePic, String location) {
+			try {
+				Statement stmt;
+				stmt = con.createStatement();
+				String sql;
+				sql = "INSERT INTO Users VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+				PreparedStatement preparedStatement = con.prepareStatement(sql);
+				preparedStatement.setInt(1, 4000);
+				preparedStatement.setString(2, String.valueOf(gender));
+				preparedStatement.setDate(3, birthDate);
+				preparedStatement.setString(4, name);
+				preparedStatement.setString(5, email);
+				preparedStatement.setString(6, password);
+				preparedStatement.setDate(7, createDate);
+				preparedStatement.setInt(8, profilePic);
+				preparedStatement.setBoolean(9, true);
+				preparedStatement.setBoolean(10, false);
+				preparedStatement.setString(11, location);
+
+				ResultSet rs = preparedStatement.executeQuery();
+
+				System.out.println("Successfully registered");
+
+				int index = 0;
+				while (rs.next()) {
+					System.out.println(rs.getString(index));
+					index++;
+				}
+
+				return true;
+			} catch (SQLException e) {
+				e.printStackTrace();
+				System.out.println("Error signing up user account");
+				return false;
+			}
 		}
 		
 		public static int match(int userid) {
@@ -89,7 +123,7 @@ public class App {
 				PreparedStatement preparedStatement;
 				
 				stmt = con.createStatement();
-				sql = "(SELECT Users.email"
+				sql = "(SELECT Users.userid"
 						+ " FROM Users, Possesses WHERE Users.userid = Possesses.userid"
 						+ " AND Users.is_matchmaking = true"
 						+ " AND Possesses.type = (SELECT type FROM Possesses WHERE userid = ?))"
@@ -112,7 +146,7 @@ public class App {
 				sql = "UPDATE Users SET is_matchmaking = true WHERE userid = ?";
 				preparedStatement = con.prepareStatement(sql);
 				preparedStatement.setInt(1, userid);
-				preparedStatement.executeQuery();
+				preparedStatement.executeUpdate();
 				
 				
 				
