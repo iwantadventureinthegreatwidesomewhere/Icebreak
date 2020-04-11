@@ -2,8 +2,10 @@ import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 public class App {
 
@@ -163,6 +165,49 @@ public class App {
 					preparedStatement.setInt(2, userid);
 					preparedStatement.setInt(3, chatid);
 					preparedStatement.setInt(4, matchedUserid);
+					preparedStatement.executeUpdate();
+					
+					//finds the interest that the matched users have in common
+					stmt = con.createStatement();
+					sql = "(SELECT type FROM Likes WHERE userid = ?)"
+							+ " INTERSECT"
+							+ " (SELECT type FROM Likes WHERE userid = ?)";
+					preparedStatement = con.prepareStatement(sql);
+					preparedStatement.setInt(1, userid);
+					preparedStatement.setInt(1, matchedUserid);
+					ResultSet rsInterest = preparedStatement.executeQuery();
+					
+					rsInterest.next();
+					String interest = rsInterest.getString("type");
+					
+					//gets all subjects generated from the interest
+					stmt = con.createStatement();
+					sql = "SELECT subject FROM Generates WHERE type = ?";
+					preparedStatement = con.prepareStatement(sql);
+					preparedStatement.setString(1, interest);
+					ResultSet rsTopics = preparedStatement.executeQuery();
+					
+					List<String> icebreakerTopics = new ArrayList<String>();
+					
+					while(rsTopics.next()) {
+						icebreakerTopics.add(rsTopics.getString("subject"));
+					}
+					
+					//selects 3 random subjects from the list
+					Collections.shuffle(icebreakerTopics);
+					List<String> threeIcebreakerTopics = icebreakerTopics.stream().limit(3).collect(Collectors.toList());
+					
+					//inserts the three icebreakers into the database 
+					stmt = con.createStatement();
+					sql = "INSERT INTO Icebreakers (chatid, conversation_number, subject, time_duration)"
+							+ " VALUES (?, 1, ?, 60), (?, 2, ?, 60), (?, 3, ?, 60)";
+					preparedStatement = con.prepareStatement(sql);
+					preparedStatement.setInt(1, chatid);
+					preparedStatement.setString(2, threeIcebreakerTopics.get(0));
+					preparedStatement.setInt(3, chatid);
+					preparedStatement.setString(4, threeIcebreakerTopics.get(1));
+					preparedStatement.setInt(5, chatid);
+					preparedStatement.setString(6, threeIcebreakerTopics.get(2));
 					preparedStatement.executeUpdate();
 					
 					System.out.println("Match was found");
