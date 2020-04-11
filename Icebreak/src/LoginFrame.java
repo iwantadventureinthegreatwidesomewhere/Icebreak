@@ -16,18 +16,16 @@ public class LoginFrame extends JFrame {
 		loginLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 		pane.add(loginLabel);
 		
-		PlaceholderTextField emailField = new PlaceholderTextField("");
+		JTextField emailField = new JTextField("Email");
 		emailField.setColumns(15);
-		emailField.setPlaceholder("Username");
 		
 		JPanel emailPanel = new JPanel();
 		emailPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
 		emailPanel.add(emailField);
 		pane.add(emailPanel);
 		
-		PlaceholderTextField passwordField = new PlaceholderTextField("");
+		JTextField passwordField = new JTextField("Password");
 		passwordField.setColumns(15);
-		passwordField.setPlaceholder("Password");
 		
 		JPanel passwordPanel = new JPanel();
 		passwordPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -36,6 +34,19 @@ public class LoginFrame extends JFrame {
 		
 		JButton loginButton = new JButton("Login");
 		loginButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+		loginButton.addActionListener(new ActionListener() { 
+			public void actionPerformed(ActionEvent e) { 
+				String rsEmail = App.DatabaseManager.login(emailField.getText(), passwordField.getText());
+				
+				if(rsEmail != null) {
+					JFrame nextFrame = new MainFrame("Icebreak", rsEmail);
+					nextFrame.setVisible(true);
+					dispose();
+				}else {
+					JOptionPane.showMessageDialog(pane, "Incorrect password for " + emailField.getText() + ". Please try again.");
+				}
+			} 
+		});
         pane.add(loginButton);
         
         JLabel SignupLabel = new JLabel("No account? Sign up!");

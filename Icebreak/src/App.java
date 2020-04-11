@@ -14,7 +14,8 @@ public class App {
 		
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				JFrame frame = new MainFrame("Icebreak", "adsda");
+				JFrame frame = new LoginFrame("Icebreak");
+				//JFrame frame = new MainFrame("Icebreak", "adsda");
 				frame.setSize(750, 500);
 				frame.setResizable(false);
 				frame.setLocationRelativeTo(null);
@@ -41,7 +42,8 @@ public class App {
 					con = DriverManager.getConnection(url, username, password);
 					System.out.println("Successfully connected to database");
 				}catch(SQLException | ClassNotFoundException e) {
-					System.out.println("Successfully connected to database");
+					e.printStackTrace();
+					System.out.println("Error connecting to database");
 				}
 			}else {
 				System.out.println("Already connected to database");
@@ -49,20 +51,25 @@ public class App {
 		}
 		
 		public static String login(String email, String password) {
-			if(email.isBlank() || email.isEmpty() || email == null || password.isBlank() || password.isEmpty() || password == null) {
+			if(!email.isBlank() && !email.isEmpty() && email != null && !password.isBlank() && !password.isEmpty() && password != null) {
 				try {
 					Statement stmt;
 					stmt = con.createStatement();
 					String sql;
-					sql = "SELECT email FROM Users WHERE email = " + email + " AND password = " + password;
-					ResultSet rs = stmt.executeQuery(sql);
+					sql = "SELECT email FROM Users WHERE email = ? AND password = ?";
+					PreparedStatement preparedStatement = con.prepareStatement(sql);
+					preparedStatement.setString(1, email);
+					preparedStatement.setString(2, password);
+					ResultSet rs = preparedStatement.executeQuery();
 					
 					if(rs.next()) {
 						return rs.getString("email");
 					}
 					
+					System.out.println("User account not found");
 					return null;
 				} catch (SQLException e) {
+					e.printStackTrace();
 					System.out.println("Error logging in to user account");
 					return null;
 				}
