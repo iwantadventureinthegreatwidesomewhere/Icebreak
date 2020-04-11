@@ -50,7 +50,7 @@ public class App {
 			}
 		}
 		
-		public static String login(String email, String password) {
+		public static int login(String email, String password) {
 			if(!email.isBlank() && !email.isEmpty() && email != null && !password.isBlank() && !password.isEmpty() && password != null) {
 				try {
 					Statement stmt;
@@ -63,18 +63,18 @@ public class App {
 					ResultSet rs = preparedStatement.executeQuery();
 					
 					if(rs.next()) {
-						return rs.getString("email");
+						return rs.getInt("userid");
 					}
 					
 					System.out.println("User account not found");
-					return null;
+					return -1;
 				} catch (SQLException e) {
 					System.out.println("Error logging in to user account");
-					return null;
+					return -1;
 				}
 			}
 			
-			return null;
+			return -1;
 		}
 		
 		public static boolean signup() {
@@ -82,7 +82,7 @@ public class App {
 			return false;
 		}
 		
-		public static int match(String email) {
+		public static int match(int userid) {
 			try {
 				Statement stmt;
 				String sql;
@@ -90,16 +90,16 @@ public class App {
 				
 				stmt = con.createStatement();
 				sql = "(SELECT Users.email"
-						+ " FROM Users, Possesses WHERE Users.email = Possesses.email"
+						+ " FROM Users, Possesses WHERE Users.userid = Possesses.userid"
 						+ " AND Users.is_matchmaking = true"
-						+ " AND Possesses.type = (SELECT type FROM Possesses WHERE email = ?))"
+						+ " AND Possesses.type = (SELECT type FROM Possesses WHERE userid = ?))"
 						+ " INTERSECT"
-						+ " (SELECT Users.email"
-						+ " FROM Users, Likes WHERE Users.email = Likes.email"
-						+ " AND Likes.type = (SELECT type FROM Likes WHERE email = ?))";
+						+ " (SELECT Users.userid"
+						+ " FROM Users, Likes WHERE Users.userid = Likes.userid"
+						+ " AND Likes.type = (SELECT type FROM Likes WHERE userid = ?))";
 				preparedStatement = con.prepareStatement(sql);
-				preparedStatement.setString(1, email);
-				preparedStatement.setString(2, email);
+				preparedStatement.setInt(1, userid);
+				preparedStatement.setInt(2, userid);
 				preparedStatement.executeQuery();
 				
 				
@@ -109,9 +109,9 @@ public class App {
 				
 				
 				stmt = con.createStatement();
-				sql = "UPDATE Users SET is_matchmaking = true WHERE email = ?";
+				sql = "UPDATE Users SET is_matchmaking = true WHERE userid = ?";
 				preparedStatement = con.prepareStatement(sql);
-				preparedStatement.setString(1, email);
+				preparedStatement.setInt(1, userid);
 				preparedStatement.executeQuery();
 				
 				

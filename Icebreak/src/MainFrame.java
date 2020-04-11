@@ -9,7 +9,7 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 public class MainFrame extends JFrame {
-	public MainFrame(String title, String email) {
+	public MainFrame(String title, int userid) {
 		super(title);
 		Container pane = getContentPane();
 		pane.setLayout(new BoxLayout(pane, BoxLayout.Y_AXIS));
@@ -19,7 +19,7 @@ public class MainFrame extends JFrame {
 		matchButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 		matchButton.addActionListener(new ActionListener() { 
 			public void actionPerformed(ActionEvent e) {
-				App.DatabaseManager.match(email);
+				App.DatabaseManager.match(userid);
 			} 
 		});
         pane.add(matchButton);

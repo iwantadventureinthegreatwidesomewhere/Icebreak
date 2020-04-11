@@ -36,10 +36,10 @@ public class LoginFrame extends JFrame {
 		loginButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 		loginButton.addActionListener(new ActionListener() { 
 			public void actionPerformed(ActionEvent e) { 
-				String rsEmail = App.DatabaseManager.login(emailField.getText(), passwordField.getText());
+				int rsUserid = App.DatabaseManager.login(emailField.getText(), passwordField.getText());
 				
-				if(rsEmail != null) {
-					JFrame nextFrame = new MainFrame("Icebreak", rsEmail);
+				if(rsUserid != -1) {
+					JFrame nextFrame = new MainFrame("Icebreak", rsUserid);
 					nextFrame.setVisible(true);
 					dispose();
 				}else {
