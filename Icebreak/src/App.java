@@ -1,7 +1,11 @@
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Random;
+import java.util.stream.Collectors;
 
 public class App {
 
@@ -124,39 +128,181 @@ public class App {
 				preparedStatement = con.prepareStatement(sql);
 				preparedStatement.setInt(1, userid);
 				preparedStatement.setInt(2, userid);
-				preparedStatement.executeQuery();
+				ResultSet matchedUsers = preparedStatement.executeQuery();
 				
-				
-				
-				
-				
-				
-				
-				stmt = con.createStatement();
-				sql = "UPDATE Users SET is_matchmaking = true WHERE userid = ?";
-				preparedStatement = con.prepareStatement(sql);
-				preparedStatement.setInt(1, userid);
-				preparedStatement.executeUpdate();
-				
-				
-				
-				
-				
-				
-				
-				//checks there is someone else that is matchmaking who is also a strong match
-				
+				if(matchedUsers.next()) {
+					//found a match
+					int matchedUserid = matchedUsers.getInt("userid");
+					
+					Random random = new Random();
+					int chatid = random.nextInt();
+					
+					//inserts a new chat into the Chats table
+					stmt = con.createStatement();
+					sql = "INSERT INTO Chats (chatid, date_time_created, is_active)"
+							+ " VALUES (?, ?, true)";
+					preparedStatement = con.prepareStatement(sql);
+					preparedStatement.setInt(1, chatid);
+					preparedStatement.setDate(2, Date.valueOf(java.time.LocalDate.now()));
+					preparedStatement.executeUpdate();
+					
+					//inserts the matched users into the Participates table
+					stmt = con.createStatement();
+					sql = "INSERT INTO Participates (chatid, userid)"
+							+ " VALUES (?, ?), (?, ?)";
+					preparedStatement = con.prepareStatement(sql);
+					preparedStatement.setInt(1, chatid);
+					preparedStatement.setInt(2, userid);
+					preparedStatement.setInt(3, chatid);
+					preparedStatement.setInt(4, matchedUserid);
+					preparedStatement.executeUpdate();
+					
+					//finds the interest that the matched users have in common
+					stmt = con.createStatement();
+					sql = "(SELECT type FROM Likes WHERE userid = ?)"
+							+ " INTERSECT"
+							+ " (SELECT type FROM Likes WHERE userid = ?)";
+					preparedStatement = con.prepareStatement(sql);
+					preparedStatement.setInt(1, userid);
+					preparedStatement.setInt(1, matchedUserid);
+					ResultSet rsInterest = preparedStatement.executeQuery();
+					
+					rsInterest.next();
+					String interest = rsInterest.getString("type");
+					
+					//gets all subjects generated from the interest
+					stmt = con.createStatement();
+					sql = "SELECT subject FROM Generates WHERE type = ?";
+					preparedStatement = con.prepareStatement(sql);
+					preparedStatement.setString(1, interest);
+					ResultSet rsTopics = preparedStatement.executeQuery();
+					
+					List<String> icebreakerTopics = new ArrayList<String>();
+					
+					while(rsTopics.next()) {
+						icebreakerTopics.add(rsTopics.getString("subject"));
+					}
+					
+					//selects 3 random subjects from the list
+					Collections.shuffle(icebreakerTopics);
+					List<String> threeIcebreakerTopics = icebreakerTopics.stream().limit(3).collect(Collectors.toList());
+					
+					//inserts the three icebreakers into the database 
+					stmt = con.createStatement();
+					sql = "INSERT INTO Icebreakers (chatid, conversation_number, subject, time_duration)"
+							+ " VALUES (?, 1, ?, 60), (?, 2, ?, 60), (?, 3, ?, 60)";
+					preparedStatement = con.prepareStatement(sql);
+					preparedStatement.setInt(1, chatid);
+					preparedStatement.setString(2, threeIcebreakerTopics.get(0));
+					preparedStatement.setInt(3, chatid);
+					preparedStatement.setString(4, threeIcebreakerTopics.get(1));
+					preparedStatement.setInt(5, chatid);
+					preparedStatement.setString(6, threeIcebreakerTopics.get(2));
+					preparedStatement.executeUpdate();
+					
+					System.out.println("Match was found");
+					return chatid;
+				}else {
+					//gets the old chats before attempting to find a match
+					stmt = con.createStatement();
+					sql = "SELECT chatid FROM Participates WHERE userid = ?";
+					preparedStatement = con.prepareStatement(sql);
+					preparedStatement.setInt(1, userid);
+					ResultSet oldChats = preparedStatement.executeQuery();
+					
+					List<Integer> oldChatids = new ArrayList<Integer>();
+					int oldNumberOfChats = 0;
+					
+					while(oldChats.next()) {
+						oldChatids.add(oldChats.getInt("chatid"));
+						oldNumberOfChats++;
+					}
+					
+					//sets is_matchmaking to true
+					stmt = con.createStatement();
+					sql = "UPDATE Users SET is_matchmaking = true WHERE userid = ?";
+					preparedStatement = con.prepareStatement(sql);
+					preparedStatement.setInt(1, userid);
+					preparedStatement.executeUpdate();
+					
+					//attempts to find a match for 30 seconds
+					long start = System.currentTimeMillis();
+					List<Integer> newChatids = null;
+					int newNumberOfChats = -1;
+					
+					while(System.currentTimeMillis() - start < 30000) {
+						//gets the current chats
+						stmt = con.createStatement();
+						sql = "SELECT chatid FROM Participates WHERE userid = ?";
+						preparedStatement = con.prepareStatement(sql);
+						preparedStatement.setInt(1, userid);
+						ResultSet newChats = preparedStatement.executeQuery();
+						
+						newChatids = new ArrayList<Integer>();
+						newNumberOfChats = 0;
+						
+						while(newChats.next()) {
+							newChatids.add(newChats.getInt("chatid"));
+							newNumberOfChats++;
+						}
+						
+						//if current number of chats is greater than before, then a match was made by another user
+						if(newNumberOfChats > oldNumberOfChats) {
+							break;
+						}
+					}
+					
+					//sets is_matchmaking to false
+					stmt = con.createStatement();
+					sql = "UPDATE Users SET is_matchmaking = false WHERE userid = ?";
+					preparedStatement = con.prepareStatement(sql);
+					preparedStatement.setInt(1, userid);
+					preparedStatement.executeUpdate();
+					
+					//if a match was made, return the new chatid
+					if(newNumberOfChats > oldNumberOfChats) {
+						for(Integer i : newChatids) {
+							if(!oldChatids.contains(i)) {
+								System.out.println("Match was made");
+								return i;
+							}
+						}
+					}
+					
+					System.out.println("No match was made");
+					return -1;
+				}
 			} catch (SQLException e) {
-				e.printStackTrace();
+				System.out.println("Error searching for a match");
+				return -1;
 			}
-			//return chatid
-			//should either scan existing matchmakers to see if 
-			return -1;
 		}
 		
-		public static List<Integer> getAllChats() {
-			//fetches all chatids of all connections with active chats
-			return null;
+		public static List<Integer> getAllChats(int userid) {
+			try {
+				//gets the chats
+				Statement stmt;
+				String sql;
+				PreparedStatement preparedStatement;
+				
+				stmt = con.createStatement();
+				sql = "SELECT chatid FROM Participates WHERE userid = ?";
+				preparedStatement = con.prepareStatement(sql);
+				preparedStatement.setInt(1, userid);
+				ResultSet chats = preparedStatement.executeQuery();
+				
+				List<Integer> chatids = new ArrayList<Integer>();
+				
+				while(chats.next()) {
+					chatids.add(chats.getInt("chatid"));
+				}
+				
+				System.out.println("Successfully fetched all chats");
+				return chatids;
+			}catch (SQLException e) {
+				System.out.println("Error fetching all chats");
+				return null;
+			}
 		}
 		
 		public static void refreshChat() {

@@ -19,10 +19,18 @@ public class MainFrame extends JFrame {
 		matchButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 		matchButton.addActionListener(new ActionListener() { 
 			public void actionPerformed(ActionEvent e) {
-				App.DatabaseManager.match(userid);
+				int chatid = App.DatabaseManager.match(userid);
+				
+				if(chatid != -1) {
+					//load chat and launch ChatFrame
+				}else {
+					JOptionPane.showMessageDialog(pane, "Failed to find a match.");
+				}
 			} 
 		});
         pane.add(matchButton);
+        
+        
 		//TODO 
 		//for (chat c : chats){ chatList.addElement(chat.otherUserName())
 	}
