@@ -86,7 +86,7 @@ public class App {
 				String sql;
 				sql = "INSERT INTO Users VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 				PreparedStatement preparedStatement = con.prepareStatement(sql);
-				preparedStatement.setInt(1, 4000);
+				preparedStatement.setInt(1, 4008);
 				preparedStatement.setString(2, String.valueOf(gender));
 				preparedStatement.setDate(3, birthDate);
 				preparedStatement.setString(4, name);
@@ -98,17 +98,7 @@ public class App {
 				preparedStatement.setBoolean(10, false);
 				preparedStatement.setString(11, location);
 
-				ResultSet rs = preparedStatement.executeQuery();
-
-				System.out.println("Successfully registered");
-
-				int index = 0;
-				while (rs.next()) {
-					System.out.println(rs.getString(index));
-					index++;
-				}
-
-				return true;
+				return !preparedStatement.execute();
 			} catch (SQLException e) {
 				e.printStackTrace();
 				System.out.println("Error signing up user account");
