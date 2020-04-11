@@ -17,16 +17,14 @@ public class MainFrame extends JFrame {
 		
 		JButton matchButton = new JButton("FIND MATCH NOW");
 		matchButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-		matchButton.addActionListener(new ActionListener() { 
-			public void actionPerformed(ActionEvent e) {
-				int chatid = App.DatabaseManager.match(userid);
-				
-				if(chatid != -1) {
-					//load chat and launch ChatFrame
-				}else {
-					JOptionPane.showMessageDialog(pane, "Failed to find a match.");
-				}
-			} 
+		matchButton.addActionListener(e -> {
+			int chatid = App.DatabaseManager.match(userid);
+
+			if(chatid != -1) {
+				//load chat and launch ChatFrame
+			}else {
+				JOptionPane.showMessageDialog(pane, "Failed to find a match.");
+			}
 		});
         pane.add(matchButton);
         

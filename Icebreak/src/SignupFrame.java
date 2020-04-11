@@ -42,7 +42,7 @@ public class SignupFrame extends JFrame {
 	private static String preference;
 	private static String interest;
 	private static String interestType;
-	private static String[] prefList = { "M", "F", "O", "M/F", "M/O", "F/O", "M/F/O", "NULL"};
+	private static final String[] prefList = { "M", "F", "O", "M/F", "M/O", "F/O", "M/F/O"};
 	private static String[] interestTypeList = {"sport", "others"};
 	private static String[][] interestList = {{"football", "pingpong", "baseball"},
             {"reading", "dancing", "drawing"}};
@@ -72,14 +72,8 @@ public class SignupFrame extends JFrame {
 		genderPane.setLayout(new BoxLayout(genderPane, BoxLayout.X_AXIS));
 	    JLabel lbl = new JLabel("Gender: ");
 	    String[] choices = { "Female","Male"};
-	    final JComboBox<String> genderDDM = new JComboBox<String>(choices);
-	    genderDDM.addActionListener(new ActionListener() {
-
-		    @Override
-		    public void actionPerformed(ActionEvent e) {
-		    	gender = genderDDM.getSelectedItem().toString();
-		    }
-		});
+	    final JComboBox<String> genderDDM = new JComboBox<>(choices);
+	    genderDDM.addActionListener(e -> gender = genderDDM.getSelectedItem().toString());
 	    genderPane.add(lbl);
 	    genderPane.add(genderDDM);	
 	    return genderPane;
@@ -89,16 +83,10 @@ public class SignupFrame extends JFrame {
 		Container preferencePane = new Container();
 		preferencePane.setLayout(new BoxLayout(preferencePane, BoxLayout.X_AXIS));
 	    JLabel lbl = new JLabel("Preference: ");
-	    final JComboBox<String> perferenceDDM = new JComboBox<String>(prefList);
-	    perferenceDDM.addActionListener(new ActionListener() {
-
-		    @Override
-		    public void actionPerformed(ActionEvent e) {
-		    	preference = perferenceDDM.getSelectedItem().toString();
-		    }
-		});
+	    final JComboBox<String> preferenceDDM = new JComboBox<>(prefList);
+	    preferenceDDM.addActionListener(e -> preference = preferenceDDM.getSelectedItem().toString());
 	    preferencePane.add(lbl);
-	    preferencePane.add(perferenceDDM);	
+	    preferencePane.add(preferenceDDM);
 	    return preferencePane;
 	}
 	
@@ -107,26 +95,18 @@ public class SignupFrame extends JFrame {
 		interestPane.setLayout(new BoxLayout(interestPane, BoxLayout.X_AXIS));
 	    JLabel lbl = new JLabel("Interest type: ");
 	    JLabel lbl2 = new JLabel("Interest: ");
-	    final JComboBox<String> typeDDM = new JComboBox<String>(interestTypeList);
-	    final JComboBox<String> interestDDM = new JComboBox<String>(interestList[0]);
-	    typeDDM.addActionListener(new ActionListener() {
-
-		    @Override
-		    public void actionPerformed(ActionEvent e) {
-		    	interestType = typeDDM.getSelectedItem().toString();
-		    	interestDDM.removeAllItems();
-		    	for (int i = 0; i < interestList[typeDDM.getSelectedIndex()].length; i++) {
-			    	interestDDM.addItem(interestList[typeDDM.getSelectedIndex()][i]);
-		    	}
-		    }
+	    final JComboBox<String> typeDDM = new JComboBox<>(interestTypeList);
+	    final JComboBox<String> interestDDM = new JComboBox<>(interestList[0]);
+	    typeDDM.addActionListener(e -> {
+			interestType = typeDDM.getSelectedItem().toString();
+			interestDDM.removeAllItems();
+			for (int i = 0; i < interestList[typeDDM.getSelectedIndex()].length; i++) {
+				interestDDM.addItem(interestList[typeDDM.getSelectedIndex()][i]);
+			}
 		});
-	    interestDDM.addActionListener(new ActionListener() {
-
-		    @Override
-		    public void actionPerformed(ActionEvent e) {
-		    	if (interestDDM.getItemCount() > 0)
-		    		interest = interestDDM.getSelectedItem().toString();
-		    }
+	    interestDDM.addActionListener(e -> {
+			if (interestDDM.getItemCount() > 0)
+				interest = interestDDM.getSelectedItem().toString();
 		});
 	    interestPane.add(lbl);
 	    interestPane.add(typeDDM);	
@@ -160,8 +140,7 @@ public class SignupFrame extends JFrame {
 				try{
 					birthDate = java.sql.Date.valueOf(dateTextField.getText());
 				}
-				catch (Exception ex) {
-					
+				catch (Exception ignored) {
 				}
 				
 			}
@@ -284,13 +263,7 @@ public class SignupFrame extends JFrame {
 	    JLabel lbl = new JLabel("Profile Picture:");
 	    JLabel lbl2 = new JLabel("Not found");
 		JButton browseButton = new JButton("Browse...");
-		browseButton.addActionListener(new ActionListener() {
-
-		    @Override
-		    public void actionPerformed(ActionEvent e) {
-		    	lbl2.setText(browseForPP());
-		    }
-		});
+		browseButton.addActionListener(e -> lbl2.setText(browseForPP()));
 		cont.add(lbl);
 		cont.add(browseButton);
 		cont.add(lbl2);
@@ -348,15 +321,12 @@ public class SignupFrame extends JFrame {
 	private JButton createDoneButton() {
 		JButton doneButton = new JButton("Done");
 		doneButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-		doneButton.addActionListener(new ActionListener() {
-
-		    @Override
-		    public void actionPerformed(ActionEvent e) {
-		    	if (createUserSQL()) 
-		    		dispose();
-		    	else
-		    		JOptionPane.showMessageDialog(currentPane, "Some input is wrong. Reason: " + error);; //TODO
-		    }
+		doneButton.addActionListener(e -> {
+			if (createUserSQL()){
+				System.out.println("Successfully signed up!");
+				dispose();
+			} else {
+				JOptionPane.showMessageDialog(currentPane, "Some input is wrong. Reason: " + error);} //TODO
 		});
 		return doneButton;
 	}
@@ -368,23 +338,20 @@ public class SignupFrame extends JFrame {
 	}
 	
 	private static boolean createUserSQL(){
-		boolean success = false;
 		DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 		LocalDateTime now = LocalDateTime.now();
 		dateCreated = java.sql.Date.valueOf(format.format(now));
 		format = DateTimeFormatter.ofPattern("HH:mm:ss");
 		timeCreated = java.sql.Time.valueOf(format.format(now));
 
-		//TODO
 		char sqlGender;
 		if (gender.equals("Female")) sqlGender = 'F';
 		else if (gender.equals("Male")) sqlGender = 'M';
 		else sqlGender = 'O';
 
 		return App.DatabaseManager.signup(sqlGender, birthDate, name, email, password,
-				dateCreated, timeCreated, 0, location);
+				dateCreated, preference, interest, interestType, 0, location);
 //		error = "duplicated user"; //TODO do like this
-//		return success;
 	}
 	
 }
