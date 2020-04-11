@@ -326,7 +326,9 @@ public class App {
 				PreparedStatement preparedStatement;
 				
 				con.createStatement();
-				sql = "SELECT Chats.chatid FROM Chats, Participates WHERE Chats.chatid = Participates.chatid AND userid = ? AND Participates.is_active = true";
+				sql = "SELECT Chats.chatid FROM Chats, Participates " +
+						"WHERE Chats.chatid = Participates.chatid " +
+						"AND userid = ? AND Chats.is_active = true";
 				preparedStatement = con.prepareStatement(sql);
 				preparedStatement.setInt(1, userid);
 				ResultSet chats = preparedStatement.executeQuery();
@@ -341,6 +343,7 @@ public class App {
 				return chatids;
 			}catch (SQLException e) {
 				System.out.println("Error fetching all chats");
+				e.printStackTrace();
 				return null;
 			}
 		}
