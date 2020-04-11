@@ -69,7 +69,6 @@ public class App {
 					System.out.println("User account not found");
 					return null;
 				} catch (SQLException e) {
-					e.printStackTrace();
 					System.out.println("Error logging in to user account");
 					return null;
 				}
@@ -83,7 +82,49 @@ public class App {
 			return false;
 		}
 		
-		public static int match() {
+		public static int match(String email) {
+			try {
+				Statement stmt;
+				String sql;
+				PreparedStatement preparedStatement;
+				
+				stmt = con.createStatement();
+				sql = "(SELECT Users.email"
+						+ " FROM Users, Possesses WHERE Users.email = Possesses.email"
+						+ " AND Users.is_matchmaking = true"
+						+ " AND Possesses.type = (SELECT type FROM Possesses WHERE email = ?))"
+						+ " INTERSECT"
+						+ " (SELECT Users.email"
+						+ " FROM Users, Likes WHERE Users.email = Likes.email"
+						+ " AND Likes.type = (SELECT type FROM Likes WHERE email = ?))";
+				preparedStatement = con.prepareStatement(sql);
+				preparedStatement.setString(1, email);
+				preparedStatement.setString(2, email);
+				preparedStatement.executeQuery();
+				
+				
+				
+				
+				
+				
+				
+				stmt = con.createStatement();
+				sql = "UPDATE Users SET is_matchmaking = true WHERE email = ?";
+				preparedStatement = con.prepareStatement(sql);
+				preparedStatement.setString(1, email);
+				preparedStatement.executeQuery();
+				
+				
+				
+				
+				
+				
+				
+				//checks there is someone else that is matchmaking who is also a strong match
+				
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 			//return chatid
 			//should either scan existing matchmakers to see if 
 			return -1;
