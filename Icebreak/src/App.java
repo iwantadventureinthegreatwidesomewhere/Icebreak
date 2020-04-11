@@ -297,7 +297,7 @@ public class App {
 				PreparedStatement preparedStatement;
 				
 				stmt = con.createStatement();
-				sql = "SELECT chatid FROM Participates WHERE userid = ?";
+				sql = "SELECT Chats.chatid FROM Chats, Participates WHERE Chats.chatid = Participates.chatid AND userid = ? AND Participates.is_active = true";
 				preparedStatement = con.prepareStatement(sql);
 				preparedStatement.setInt(1, userid);
 				ResultSet chats = preparedStatement.executeQuery();
@@ -316,13 +316,60 @@ public class App {
 			}
 		}
 		
-		public static void refreshChat() {
-			//not sure what to return, i'm thinking a new object that contains the conversation history and other chat details
-			//caller should use this method on loop as we don't have a notification system
-			//should also be used to load a previous existing conversation
+		public static Chat refreshChat(int userid, int chatid) {
+			try {
+				Statement stmt;
+				String sql;
+				PreparedStatement preparedStatement;
+				
+				stmt = con.createStatement();
+				sql = "SELECT User.userid, User.​name​ FROM Users, Participates"
+						+ " WHERE Users.userid = Participates.userid"
+						+ " AND Participates.userid != ? AND Participates.chatid = ?";
+				preparedStatement = con.prepareStatement(sql);
+				preparedStatement.setInt(1, userid);
+				preparedStatement.setInt(2, chatid);
+				ResultSet rsMatchedUser = preparedStatement.executeQuery();
+				
+				String matchedName = null;
+				
+				if(rsMatchedUser.next()) {
+					matchedName = rsMatchedUser.getString("User.​name");
+				}
+				
+				stmt = con.createStatement();
+				sql = "SELECT msgid, content, name, conversation_number FROM Conversations, Messages, Users"
+						+ " WHERE Conversations.chatid = Messages.chatid"
+						+ " AND Messages.userid = Users.userid"
+						+ " AND Conversations.chatid = ?"
+						+ " AND Messages.status = ?"
+						+ " ORDER BY msgid";
+				preparedStatement = con.prepareStatement(sql);
+				preparedStatement.setInt(1, chatid);
+				preparedStatement.setString(2, "sent");
+				ResultSet rsOrderedMessages = preparedStatement.executeQuery();
+				
+				List<Message> orderedMessages = new ArrayList<Message>();
+				while(rsOrderedMessages.next()) {
+					int msgid = rsOrderedMessages.getInt("msgid");
+					String content = rsOrderedMessages.getString("content");
+					String name = rsOrderedMessages.getString("name");
+					int conversation_number = rsOrderedMessages.getInt("conversation_number");
+					
+					orderedMessages.add(new Message(msgid, content, name, chatid, conversation_number));
+				}
+				
+				Chat chat = new Chat(chatid, matchedName, orderedMessages);
+				
+				System.out.println("Sucessfully loaded chat with " + matchedName);
+				return chat;
+			} catch (SQLException e) {
+				System.out.println("Error loading some chat");
+				return null;
+			}
 		}
 		
-		public static void sendMessage() {
+		public static void sendMessage(int chatid, int conversation_number) {
 			//return success status
 		}
 		
@@ -339,5 +386,32 @@ public class App {
 			}
 		}
 	}
-
+	
+	public static class Chat {
+		int chatid;
+		String recipientName;
+		List<Message> orderedMessages;
+		
+		public Chat(int chatid, String recipientName, List<Message> orderedMessages) {
+			this.chatid = chatid;
+			this.recipientName = recipientName;
+			this.orderedMessages = orderedMessages;
+		}
+	}
+	
+	public static class Message {
+		int msgid;
+		String content;
+		String sender;
+		int chatid;
+		int conversation_number;
+		
+		public Message(int msgid, String content, String sender, int chatid, int conversation_number) {
+			this.msgid = msgid;
+			this.content = content;
+			this.sender = sender;
+			this.chatid = chatid;
+			this.conversation_number = conversation_number;
+		}
+	}
 }
