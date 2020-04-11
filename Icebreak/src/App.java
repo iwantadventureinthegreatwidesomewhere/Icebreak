@@ -132,9 +132,8 @@ public class App {
 				
 				if(matchedUsers.next()) {
 					//found a match
-//					int matchedUserid = matchedUsers.getInt("userid");
-
 					int matchedUserid = matchedUsers.getInt("userid");
+					
 					Random random = new Random();
 					int chatid = random.nextInt();
 					
@@ -187,13 +186,12 @@ public class App {
 						icebreakerTopics.add(rsTopics.getString("subject"));
 					}
 
-					//selects 3 random subjects from the list
+					//selects three random subjects from the list
 					Collections.shuffle(icebreakerTopics);
 					List<String> threeIcebreakerTopics = icebreakerTopics.stream().limit(3).collect(Collectors.toList());
-//
-//					//inserts three conversations into Conversations
+
 					stmt = con.createStatement();
-					sql = "INSERT INTO conversations (chatid, conversation_number)"
+					sql = "INSERT INTO Conversations (chatid, conversation_number)"
 							+ " VALUES (?, 1), (?, 2), (?, 3)";
 					preparedStatement = con.prepareStatement(sql);
 					preparedStatement.setInt(1, chatid);
@@ -201,7 +199,6 @@ public class App {
 					preparedStatement.setInt(3, chatid);
 					preparedStatement.executeUpdate();
 
-					//inserts the three icebreakers into the database 
 					stmt = con.createStatement();
 					sql = "INSERT INTO Icebreakers (chatid, conversation_number, subject, time_duration)"
 							+ " VALUES (?, 1, ?, 60), (?, 2, ?, 60), (?, 3, ?, 60)";
@@ -288,7 +285,6 @@ public class App {
 				}
 			} catch (SQLException e) {
 				System.out.println("Error searching for a match");
-				e.printStackTrace();
 				return -1;
 			}
 		}
