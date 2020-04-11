@@ -53,12 +53,11 @@ public class App {
 		}
 		
 		public static int login(String email, String password) {
-//			if(!email.isBlank() && !email.isEmpty() && !password.isBlank() && !password.isEmpty()) {
 			if(!email.isEmpty()  && !password.isEmpty()) {
 				try {
 					con.createStatement();
 					String sql;
-					sql = "SELECT email FROM Users WHERE email = ? AND password = ?";
+					sql = "SELECT userid FROM Users WHERE email = ? AND password = ?";
 					PreparedStatement preparedStatement = con.prepareStatement(sql);
 					preparedStatement.setString(1, email);
 					preparedStatement.setString(2, password);
