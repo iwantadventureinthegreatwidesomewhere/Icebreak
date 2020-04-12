@@ -389,9 +389,9 @@ public class App {
 	}
 	
 	public static class Chat {
-		int chatid;
-		String recipientName;
-		List<Message> orderedMessages;
+		public int chatid;
+		public String recipientName;
+		public List<Message> orderedMessages;
 		
 		public Chat(int chatid, String recipientName, List<Message> orderedMessages) {
 			this.chatid = chatid;
@@ -401,11 +401,11 @@ public class App {
 	}
 	
 	public static class Message {
-		int msgid;
-		String content;
-		String sender;
-		int chatid;
-		int conversation_number;
+		public int msgid;
+		public String content;
+		public String sender;
+		public int chatid;
+		public int conversation_number;
 		
 		public Message(int msgid, String content, String sender, int chatid, int conversation_number) {
 			this.msgid = msgid;

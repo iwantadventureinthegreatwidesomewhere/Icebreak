@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.List;
 
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
@@ -13,16 +14,14 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 
 public class ChatFrame extends JFrame {
-	String[] users = {"peach", "eggplanet", "peach", "eggsplant", "peach"};
-	String[] messages = {"hey come", "I am playing cod", "My parents are not home", "OMW", "Bring pizza"};
-	
 	private static Container currentPane;
 	private static String currentMessage;
-	private static String sender;
-	private static String receiver;
+	private static int userid;
+	private static int chatid;
 	public ChatFrame(String title, int userid, int chatid) {
 		super(title);
-		Chat currentChat = refreshChat(userid, chatid);
+		this.userid = userid;
+		this.chatid = chatid;
 		Container pane = getContentPane();
 		currentPane = pane;
 		this.setSize(400, 400);
@@ -30,13 +29,16 @@ public class ChatFrame extends JFrame {
 		this.setLocationRelativeTo(null);
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setVisible(true);
-		pane.add(DisplayMessages(users, messages));
+		App.Chat currentChat = App.DatabaseManager.refreshChat(userid, chatid);
+		List<App.Message> msgs = currentChat.orderedMessages;
+		pane.add(displayMessages(msgs));
+		pane.add(createCurrentMessagePanel());
 	}
 	
-	public static JList<String> DisplayMessages(String[] users, String[] messages) {
+	public static JList<String> displayMessages(List<App.Message> msgs) {
         DefaultListModel<String> l1 = new DefaultListModel<>();  
-        for (int i = 0; i < users.length; i++) {
-        	l1.addElement(users[i] + ": " + messages[i]);
+        for (App.Message m : msgs) {
+        	l1.addElement(m.sender + ": " + m.content);
         }
         JList<String> msgList = new JList<>(l1);
         msgList.setBounds(200, 200, 200, 200);
@@ -45,6 +47,7 @@ public class ChatFrame extends JFrame {
 	}
 	
 	private static Container createCurrentMessagePanel() {
+
 		Container cont = new Container();
 		cont.setLayout(new BoxLayout(cont, BoxLayout.X_AXIS));
 		PlaceholderTextField messageField = new PlaceholderTextField("Message", 40);
@@ -73,12 +76,12 @@ public class ChatFrame extends JFrame {
 
 		    @Override
 		    public void actionPerformed(ActionEvent e) {
-		    	postMessage(sender, receiver, currentMessage);
+		    	App.DatabaseManager.sendMessage(userid, chatid);
 		    	currentMessage = "";
 		    	messageField.setText("");
 		    }
 		});
-		
+
 		JPanel messagePanel = new JPanel();
 		messagePanel.setAlignmentX(Component.CENTER_ALIGNMENT);
 		messagePanel.add(messageField);
