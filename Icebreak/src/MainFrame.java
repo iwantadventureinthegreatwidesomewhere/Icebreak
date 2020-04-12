@@ -54,13 +54,13 @@ public class MainFrame extends JFrame {
 			}
 		});
         pane.add(matchButton);
+		JLabel label = new JLabel("Recent chats");
+		pane.add(label);
 		pane.add(createChatList(chatList));
 		
 	}
 
-	private JPanel createChatList(DefaultListModel<String> chatList) {
-		JPanel cont = new JPanel();
-		JLabel label = new JLabel("Recent chats");
+	private JList createChatList(DefaultListModel<String> chatList) {
 		JList<String> chatListPanel = new JList<String>(chatList);
 		chatListPanel.addMouseListener(new MouseAdapter() {
 		    public void mouseClicked(MouseEvent evt) {
@@ -77,9 +77,9 @@ public class MainFrame extends JFrame {
 		        }
 		    }
 		});
-		cont.add(label);
-		cont.add(chatListPanel);
-		return cont ;
+
+		chatListPanel.setBounds(100, 100, 300, 550);
+		return chatListPanel ;
 	}
 
 }
