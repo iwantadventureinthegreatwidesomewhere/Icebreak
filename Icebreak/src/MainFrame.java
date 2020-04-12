@@ -2,6 +2,10 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.EventObject;
 import java.util.List;
 
 import javax.swing.BoxLayout;
@@ -13,14 +17,24 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 
+
 public class MainFrame extends JFrame {
+	public static List<Integer> chatidList = new ArrayList<Integer>();
+	public static int userid;
 	public MainFrame(String title, int userid) {
 		super(title);
+		this.userid = userid;
+		this.setSize(750, 500);
+		this.setResizable(false);
+		this.setLocationRelativeTo(null);
+		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		this.setVisible(true);
 		Container pane = getContentPane();
 		pane.setLayout(new BoxLayout(pane, BoxLayout.Y_AXIS));
 		List<Integer> chatids = App.DatabaseManager.getAllChats(userid);
-		DefaultListModel chatList = new DefaultListModel();
+		DefaultListModel<String> chatList = new DefaultListModel<String>();
 		if (chatids != null) {
+			chatidList = chatids;
 			for (Integer id : chatids) {
 				App.Chat chat = App.DatabaseManager.refreshChat(userid, Integer.valueOf(id));
 				if (chat == null) continue;
@@ -41,26 +55,28 @@ public class MainFrame extends JFrame {
 		});
         pane.add(matchButton);
 		pane.add(createChatList(chatList));
-		pane.add(createMatchButton());
 		
 	}
 
-	private JButton createMatchButton() {
-		JButton matchButton = new JButton("Next Match!");
-		matchButton.addActionListener(new ActionListener() {
-
-		    @Override
-		    public void actionPerformed(ActionEvent e) {
-		    	//TODO add functionality of chat with next match
-		    }
-		});
-		return matchButton;
-	}
-
-	private JPanel createChatList(DefaultListModel chatList) {
+	private JPanel createChatList(DefaultListModel<String> chatList) {
 		JPanel cont = new JPanel();
 		JLabel label = new JLabel("Recent chats");
 		JList<String> chatListPanel = new JList<String>(chatList);
+		chatListPanel.addMouseListener(new MouseAdapter() {
+		    public void mouseClicked(MouseEvent evt) {
+		        JList list = (JList)((EventObject) evt).getSource();
+		        if (evt.getClickCount() == 2) {
+
+		            // Double-click detected
+		            int index = list.locationToIndex(evt.getPoint());
+		            ChatFrame chatFrame = new ChatFrame(chatList.elementAt(index), userid, chatidList.get(index));
+		        } else if (evt.getClickCount() == 3) {
+
+		            // Triple-click detected
+		            int index = list.locationToIndex(evt.getPoint());
+		        }
+		    }
+		});
 		cont.add(label);
 		cont.add(chatListPanel);
 		return cont ;

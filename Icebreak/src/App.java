@@ -342,7 +342,7 @@ public class App {
 				System.out.println("Successfully fetched all chats");
 				return chatids;
 			}catch (SQLException e) {
-				System.out.println("Error fetching all chats");
+				System.out.println("Error fetching all chats" + e.getMessage());
 				e.printStackTrace();
 				return null;
 			}
