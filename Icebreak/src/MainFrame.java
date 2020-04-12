@@ -49,7 +49,16 @@ public class MainFrame extends JFrame {
 		JLabel label = new JLabel("Recent chats");
 		pane.add(label);
 		pane.add(createChatList(chatList));
-		//TODO: Make sure the connection to db is closed when window is closed
+
+		//Close connection on window close
+		this.addWindowListener(new WindowAdapter(){
+			public void windowClosing(WindowEvent e){
+				System.out.println("Closing connection...");
+				App.DatabaseManager.closeConnection();
+				System.out.println("Closed");
+				System.exit(0);
+			}
+		});
 	}
 
 	private JList createChatList(DefaultListModel<String> chatList) {
