@@ -20,9 +20,12 @@ public class MainFrame extends JFrame {
 		pane.setLayout(new BoxLayout(pane, BoxLayout.Y_AXIS));
 		List<Integer> chatids = App.DatabaseManager.getAllChats(userid);
 		DefaultListModel chatList = new DefaultListModel();
-		for (Integer id : chatids) {
-			App.Chat chat = App.DatabaseManager.refreshChat(userid, Integer.valueOf(id));
-			chatList.addElement(chat.recipientName);
+		if (chatids != null) {
+			for (Integer id : chatids) {
+				App.Chat chat = App.DatabaseManager.refreshChat(userid, Integer.valueOf(id));
+				if (chat == null) continue;
+				chatList.addElement(chat.recipientName);
+			}
 		}
 		
 		JButton matchButton = new JButton("FIND MATCH NOW");
