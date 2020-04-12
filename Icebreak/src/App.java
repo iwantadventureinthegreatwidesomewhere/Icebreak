@@ -412,8 +412,45 @@ public class App {
 			}
 		}
 		
-		public static void sendMessage(int chatid, int conversation_number) {
-			//return success status
+		public static boolean sendMessage(int userid, int chatid, String content, int conversation_number) {
+			try {
+				//generates a msgid for the new message
+				String sql;
+				PreparedStatement preparedStatement;
+				
+				sql = "SELECT MAX(msgid) " +
+						"FROM Messages WHERE chatid = ?";
+				preparedStatement = con.prepareStatement(sql);
+				preparedStatement.setInt(1, chatid);
+				ResultSet maxMsgid = preparedStatement.executeQuery();
+				
+				int msgid = 9999;
+
+				if (maxMsgid.next()) {
+					msgid = maxMsgid.getInt("max");
+					msgid++;
+				}
+				
+				//inserts the new message into the Messages table
+				con.createStatement();
+				sql = "INSERT INTO Messages (msgid, status, ​timestamp, content, userid, chatid, conversation_number)"
+						+ " VALUES (?, ?, ?, ?, ?, ?, ?)";
+				preparedStatement = con.prepareStatement(sql);
+				preparedStatement.setInt(1, msgid);
+				preparedStatement.setString(2, "sent");
+				preparedStatement.setDate(3, Date.valueOf(java.time.LocalDate.now()));
+				preparedStatement.setString(4, content);
+				preparedStatement.setInt(5, userid);
+				preparedStatement.setInt(6, chatid);
+				preparedStatement.setInt(7, conversation_number);
+				preparedStatement.executeUpdate();
+				
+				System.out.println("Successfully sent message");
+				return true;
+			} catch (SQLException e) {
+				System.out.println("Error sending message");
+				return false;
+			}
 		}
 		
 		public static void closeConnection() {
