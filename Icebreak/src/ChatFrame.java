@@ -11,6 +11,7 @@ import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.Timer;
@@ -31,11 +32,15 @@ public class ChatFrame extends JFrame {
 		this.setSize(400, 400);
 		this.setResizable(false);
 		this.setLocationRelativeTo(null);
-		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setVisible(true);
 		App.Chat currentChat = App.DatabaseManager.refreshChat(userid, chatid);
+		pane.setLayout(new BoxLayout(pane, BoxLayout.Y_AXIS));
 		cid = currentChat.conversation_number;
 		List<App.Message> msgs = currentChat.orderedMessages;
+		if (currentChat != null && currentChat.icebreaker != null) {
+			JLabel label = new JLabel("Icebreaker: " + currentChat.icebreaker);
+			pane.add(label);
+		}
 		pane.add(displayMessages(msgs));
 		pane.add(createCurrentMessagePanel());
 	}
@@ -53,15 +58,15 @@ public class ChatFrame extends JFrame {
 			List<App.Message> msgs1 = currentChat.orderedMessages;
 			String[] messages = new String[msgs1.size()];
 			int i = 0;
+
+			System.out.println("refreshing new chatlist with size: " + msgs1.size());
 			for (App.Message m : msgs1) {
 				messages[i] = m.sender + ": " + m.content;
 				i++;
 			}
 			msgList.setListData(messages);
 		});
-		if (!msgs.isEmpty()) {
-			timer.start();
-		}
+		timer.start();
         return msgList;
 	}
 	

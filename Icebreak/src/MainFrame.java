@@ -79,6 +79,24 @@ public class MainFrame extends JFrame {
 		    }
 		});
 
+        Timer timer = new Timer(1000, evt -> {
+    		List<Integer> chatids = App.DatabaseManager.getAllChats(userid);
+    		if (chatids != null) {
+    			String[] users = new String[chatids.size()];
+    			chatidList = chatids;
+    			int i = 0;
+    			for (Integer id : chatids) {
+    				App.Chat chat = App.DatabaseManager.refreshChat(userid, id);
+    				if (chat == null) break;
+    				users[i] = chat.recipientName;
+    				i++;
+    			}
+        		chatListPanel.setListData(users);
+    		}
+		});
+        
+		timer.start();
+
 		chatListPanel.setBounds(100, 100, 300, 550);
 		return chatListPanel ;
 	}
