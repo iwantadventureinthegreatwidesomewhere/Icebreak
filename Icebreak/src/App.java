@@ -339,7 +339,7 @@ public class App {
 					chatids.add(chats.getInt("chatid"));
 				}
 				
-				System.out.println("Successfully fetched all chats");
+				System.out.println("Successfully fetched all chats" + userid);
 				return chatids;
 			}catch (SQLException e) {
 				System.out.println("Error fetching all chats" + e.getMessage());
@@ -372,16 +372,22 @@ public class App {
 				}
 				
 				con.createStatement();
-				sql = "SELECT m.msgid, m.content, u.name, c.conversation_number " +
-						"FROM Conversations c, Messages m, Users u"
-						+ " WHERE c.chatid = m.chatid"
-						+ " AND m.userid = u.userid"
-						+ " AND c.chatid = ?"
-						+ " AND m.status = ?"
+//				sql = "SELECT m.msgid, m.content, u.name, c.conversation_number " +
+//						"FROM Conversations c, Messages m, Users u"
+//						+ " WHERE c.chatid = m.chatid"
+//						+ " AND m.userid = u.userid"
+//						+ " AND c.chatid = ?"
+//						+ " AND m.status = ?"
+//						+ " ORDER BY msgid";
+				sql = "SELECT m.msgid, m.content, m.userid, u.name " +
+						"FROM Messages m, Users u"
+						+ " WHERE m.userid = u.userid"
+						+ " AND m.chatid = ?"
 						+ " ORDER BY msgid";
 				preparedStatement = con.prepareStatement(sql);
 				preparedStatement.setInt(1, chatid);
-				preparedStatement.setString(2, "sent");
+				System.out.println("chatid " + chatid);
+//				preparedStatement.setString(2, "sent");
 				ResultSet rsOrderedMessages = preparedStatement.executeQuery();
 				
 				List<Message> orderedMessages = new ArrayList<>();
@@ -389,7 +395,8 @@ public class App {
 					int msgid = rsOrderedMessages.getInt("msgid");
 					String content = rsOrderedMessages.getString("content");
 					String name = rsOrderedMessages.getString("name");
-					int conversation_number = rsOrderedMessages.getInt("conversation_number");
+//					int conversation_number = rsOrderedMessages.getInt("conversation_number");
+					int conversation_number = 0;
 					
 					orderedMessages.add(new Message(msgid, content, name, chatid, conversation_number));
 				}

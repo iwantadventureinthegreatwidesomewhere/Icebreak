@@ -39,9 +39,11 @@ public class ChatFrame extends JFrame {
         DefaultListModel<String> l1 = new DefaultListModel<>();  
         for (App.Message m : msgs) {
         	l1.addElement(m.sender + ": " + m.content);
+			System.out.println("content " + m.content);
+        	
         }
         JList<String> msgList = new JList<>(l1);
-        msgList.setBounds(200, 200, 200, 200);
+        msgList.setBounds(100, 100, 200, 200);
         
         return msgList;
 	}
@@ -50,8 +52,8 @@ public class ChatFrame extends JFrame {
 
 		Container cont = new Container();
 		cont.setLayout(new BoxLayout(cont, BoxLayout.X_AXIS));
-		PlaceholderTextField messageField = new PlaceholderTextField("Message", 40);
-		messageField.setColumns(40);
+		PlaceholderTextField messageField = new PlaceholderTextField("Message", 15);
+		messageField.setColumns(15);
 		messageField.addKeyListener(new KeyListener()
 		{
 			public void keyPressed(KeyEvent e)
