@@ -16,16 +16,14 @@ public class App {
 			System.exit(0);
 		}
 		
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				JFrame frame = new LoginFrame("Icebreak");
-//				JFrame frame = new MainFrame("Icebreak", 4000);
-				frame.setSize(750, 500);
-				frame.setResizable(false);
-				frame.setLocationRelativeTo(null);
-				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-				frame.setVisible(true);
-			}
+		SwingUtilities.invokeLater(() -> {
+			JFrame frame = new LoginFrame("Icebreak");
+//			JFrame frame = new MainFrame("Icebreak", 4011);
+			frame.setSize(750, 500);
+			frame.setResizable(false);
+			frame.setLocationRelativeTo(null);
+			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+			frame.setVisible(true);
 		});
 		
 
@@ -58,15 +56,14 @@ public class App {
 //			if(!email.isBlank() && !email.isEmpty() && !password.isBlank() && !password.isEmpty()) {
 			if(!email.isEmpty()  && !password.isEmpty()) {
 				try {
-					Statement stmt;
-					stmt = con.createStatement();
+					con.createStatement();
 					String sql;
 					sql = "SELECT email FROM Users WHERE email = ? AND password = ?";
 					PreparedStatement preparedStatement = con.prepareStatement(sql);
 					preparedStatement.setString(1, email);
 					preparedStatement.setString(2, password);
 					ResultSet rs = preparedStatement.executeQuery();
-					
+
 					if(rs.next()) {
 						return rs.getInt("userid");
 					}
@@ -74,7 +71,7 @@ public class App {
 					System.out.println("User account not found");
 					return -1;
 				} catch (SQLException e) {
-					System.out.println("Error logging in to user account");
+					System.out.println("Error logging in to user account " + e.getMessage());
 					return -1;
 				}
 			}
@@ -83,27 +80,61 @@ public class App {
 		}
 		
 		public static boolean signup(char gender, Date birthDate, String name, String email,
-									 String password, Date createDate, Time createTime,
-									 int profilePic, String location) {
+									 String password, Date createDate, String preference,
+									 String interest, String interestType, int profilePic,
+									 String location) {
 			try {
-				Statement stmt;
-				stmt = con.createStatement();
+				con.createStatement();
 				String sql;
-				sql = "INSERT INTO Users VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-				PreparedStatement preparedStatement = con.prepareStatement(sql);
-				preparedStatement.setInt(1, 500);
-				preparedStatement.setString(2, String.valueOf(gender));
-				preparedStatement.setDate(3, birthDate);
-				preparedStatement.setString(4, name);
-				preparedStatement.setString(5, email);
-				preparedStatement.setString(6, password);
-				preparedStatement.setDate(7, createDate);
-				preparedStatement.setInt(8, profilePic);
-				preparedStatement.setBoolean(9, true);
-				preparedStatement.setBoolean(10, false);
-				preparedStatement.setString(11, location);
+				sql = "SELECT MAX(userid) " +
+						"FROM users;";
+				PreparedStatement ps = con.prepareStatement(sql);
 
-				return !preparedStatement.execute();
+				ResultSet max = ps.executeQuery();
+				int userid = 9999;
+
+				try {
+					if (max.next()) {
+						userid = max.getInt("max");
+						userid++;
+					}
+				} catch (Exception e) {
+					System.out.println("Exception getting max userid:");
+					e.printStackTrace();
+				}
+
+				con.createStatement();
+				sql = "INSERT INTO Users VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+				ps = con.prepareStatement(sql);
+				ps.setInt(1, userid);
+				ps.setString(2, String.valueOf(gender));
+				ps.setDate(3, birthDate);
+				ps.setString(4, name);
+				ps.setString(5, email);
+				ps.setString(6, password);
+				ps.setDate(7, createDate);
+				ps.setInt(8, profilePic);
+				ps.setBoolean(9, true);
+				ps.setBoolean(10, false);
+				ps.setString(11, location);
+
+				if (!(ps.executeUpdate() > 0)) return false;
+
+				con.createStatement();
+				sql = "INSERT INTO possesses VALUES(?, ?)";
+				ps = con.prepareStatement(sql);
+				ps.setInt(1, userid);
+				ps.setString(2, preference);
+
+				if (!(ps.executeUpdate() > 0)) return false;
+
+				con.createStatement();
+				sql = "INSERT INTO likes VALUES(?, ?)";
+				ps = con.prepareStatement(sql);
+				ps.setInt(1, userid);
+				ps.setString(2, interest);
+
+				return ps.executeUpdate() > 0;
 			} catch (SQLException e) {
 				e.printStackTrace();
 				System.out.println("Error signing up user account");
@@ -113,11 +144,10 @@ public class App {
 		
 		public static int match(int userid) {
 			try {
-				Statement stmt;
 				String sql;
 				PreparedStatement preparedStatement;
 				
-				stmt = con.createStatement();
+				con.createStatement();
 				sql = "(SELECT Users.userid"
 						+ " FROM Users, Possesses WHERE Users.userid = Possesses.userid"
 						+ " AND Users.is_matchmaking = true"
@@ -139,7 +169,7 @@ public class App {
 					int chatid = random.nextInt();
 					
 					//inserts a new chat into the Chats table
-					stmt = con.createStatement();
+					con.createStatement();
 					sql = "INSERT INTO Chats (chatid, date_time_created, is_active)"
 							+ " VALUES (?, ?, true)";
 					preparedStatement = con.prepareStatement(sql);
@@ -148,7 +178,7 @@ public class App {
 					preparedStatement.executeUpdate();
 					
 					//inserts the matched users into the Participates table
-					stmt = con.createStatement();
+					con.createStatement();
 					sql = "INSERT INTO Participates (chatid, userid)"
 							+ " VALUES (?, ?), (?, ?)";
 					preparedStatement = con.prepareStatement(sql);
@@ -159,7 +189,7 @@ public class App {
 					preparedStatement.executeUpdate();
 					
 					//finds the interest that the matched users have in common
-					stmt = con.createStatement();
+					con.createStatement();
 					sql = "(SELECT type FROM Likes WHERE userid = ?)"
 							+ " INTERSECT"
 							+ " (SELECT type FROM Likes WHERE userid = ?)";
@@ -175,7 +205,7 @@ public class App {
 					}
 
 					//gets all subjects generated from the interest
-					stmt = con.createStatement();
+					con.createStatement();
 					sql = "SELECT subject FROM Generates WHERE type = ?";
 					preparedStatement = con.prepareStatement(sql);
 					preparedStatement.setString(1, interest);
@@ -191,7 +221,7 @@ public class App {
 					Collections.shuffle(icebreakerTopics);
 					List<String> threeIcebreakerTopics = icebreakerTopics.stream().limit(3).collect(Collectors.toList());
 
-					stmt = con.createStatement();
+					con.createStatement();
 					sql = "INSERT INTO Conversations (chatid, conversation_number)"
 							+ " VALUES (?, 1), (?, 2), (?, 3)";
 					preparedStatement = con.prepareStatement(sql);
@@ -200,7 +230,7 @@ public class App {
 					preparedStatement.setInt(3, chatid);
 					preparedStatement.executeUpdate();
 
-					stmt = con.createStatement();
+					con.createStatement();
 					sql = "INSERT INTO Icebreakers (chatid, conversation_number, subject, time_duration)"
 							+ " VALUES (?, 1, ?, 60), (?, 2, ?, 60), (?, 3, ?, 60)";
 					preparedStatement = con.prepareStatement(sql);
@@ -211,18 +241,18 @@ public class App {
 					preparedStatement.setInt(5, chatid);
 					preparedStatement.setString(6, threeIcebreakerTopics.get(2));
 					preparedStatement.executeUpdate();
-					
+
 					System.out.println("Match was found");
 					return chatid;
 				}else {
 					//gets the old chats before attempting to find a match
-					stmt = con.createStatement();
+					con.createStatement();
 					sql = "SELECT chatid FROM Participates WHERE userid = ?";
 					preparedStatement = con.prepareStatement(sql);
 					preparedStatement.setInt(1, userid);
 					ResultSet oldChats = preparedStatement.executeQuery();
 					
-					List<Integer> oldChatids = new ArrayList<Integer>();
+					List<Integer> oldChatids = new ArrayList<>();
 					int oldNumberOfChats = 0;
 					
 					while(oldChats.next()) {
@@ -231,7 +261,7 @@ public class App {
 					}
 					
 					//sets is_matchmaking to true
-					stmt = con.createStatement();
+					con.createStatement();
 					sql = "UPDATE Users SET is_matchmaking = true WHERE userid = ?";
 					preparedStatement = con.prepareStatement(sql);
 					preparedStatement.setInt(1, userid);
@@ -244,13 +274,13 @@ public class App {
 					
 					while(System.currentTimeMillis() - start < 30000) {
 						//gets the current chats
-						stmt = con.createStatement();
+						con.createStatement();
 						sql = "SELECT chatid FROM Participates WHERE userid = ?";
 						preparedStatement = con.prepareStatement(sql);
 						preparedStatement.setInt(1, userid);
 						ResultSet newChats = preparedStatement.executeQuery();
 						
-						newChatids = new ArrayList<Integer>();
+						newChatids = new ArrayList<>();
 						newNumberOfChats = 0;
 						
 						while(newChats.next()) {
@@ -265,7 +295,7 @@ public class App {
 					}
 					
 					//sets is_matchmaking to false
-					stmt = con.createStatement();
+					con.createStatement();
 					sql = "UPDATE Users SET is_matchmaking = false WHERE userid = ?";
 					preparedStatement = con.prepareStatement(sql);
 					preparedStatement.setInt(1, userid);
@@ -293,17 +323,16 @@ public class App {
 		public static List<Integer> getAllChats(int userid) {
 			try {
 				//gets the chats
-				Statement stmt;
 				String sql;
 				PreparedStatement preparedStatement;
 				
-				stmt = con.createStatement();
+				con.createStatement();
 				sql = "SELECT Chats.chatid FROM Chats, Participates WHERE Chats.chatid = Participates.chatid AND userid = ? AND Participates.is_active = true";
 				preparedStatement = con.prepareStatement(sql);
 				preparedStatement.setInt(1, userid);
 				ResultSet chats = preparedStatement.executeQuery();
 				
-				List<Integer> chatids = new ArrayList<Integer>();
+				List<Integer> chatids = new ArrayList<>();
 				
 				while(chats.next()) {
 					chatids.add(chats.getInt("chatid"));
@@ -319,14 +348,16 @@ public class App {
 		
 		public static Chat refreshChat(int userid, int chatid) {
 			try {
-				Statement stmt;
 				String sql;
 				PreparedStatement preparedStatement;
 				
-				stmt = con.createStatement();
-				sql = "SELECT User.userid, User.​name​ FROM Users, Participates"
-						+ " WHERE Users.userid = Participates.userid"
-						+ " AND Participates.userid != ? AND Participates.chatid = ?";
+				con.createStatement();
+				sql = "SELECT u.userid, u.name " +
+						"FROM users u, participates p " +
+						"WHERE p.userid != ? " +
+						"AND p.chatid != ?" +
+						"AND u.userid = p.userid;";
+
 				preparedStatement = con.prepareStatement(sql);
 				preparedStatement.setInt(1, userid);
 				preparedStatement.setInt(2, chatid);
@@ -335,22 +366,23 @@ public class App {
 				String matchedName = null;
 				
 				if(rsMatchedUser.next()) {
-					matchedName = rsMatchedUser.getString("User.​name");
+					matchedName = rsMatchedUser.getString("name");
 				}
 				
-				stmt = con.createStatement();
-				sql = "SELECT msgid, content, name, conversation_number FROM Conversations, Messages, Users"
-						+ " WHERE Conversations.chatid = Messages.chatid"
-						+ " AND Messages.userid = Users.userid"
-						+ " AND Conversations.chatid = ?"
-						+ " AND Messages.status = ?"
+				con.createStatement();
+				sql = "SELECT m.msgid, m.content, u.name, c.conversation_number " +
+						"FROM Conversations c, Messages m, Users u"
+						+ " WHERE c.chatid = m.chatid"
+						+ " AND m.userid = u.userid"
+						+ " AND c.chatid = ?"
+						+ " AND m.status = ?"
 						+ " ORDER BY msgid";
 				preparedStatement = con.prepareStatement(sql);
 				preparedStatement.setInt(1, chatid);
 				preparedStatement.setString(2, "sent");
 				ResultSet rsOrderedMessages = preparedStatement.executeQuery();
 				
-				List<Message> orderedMessages = new ArrayList<Message>();
+				List<Message> orderedMessages = new ArrayList<>();
 				while(rsOrderedMessages.next()) {
 					int msgid = rsOrderedMessages.getInt("msgid");
 					String content = rsOrderedMessages.getString("content");
@@ -366,6 +398,7 @@ public class App {
 				return chat;
 			} catch (SQLException e) {
 				System.out.println("Error loading some chat");
+				e.printStackTrace();
 				return null;
 			}
 		}

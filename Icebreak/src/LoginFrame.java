@@ -34,18 +34,16 @@ public class LoginFrame extends JFrame {
 		
 		JButton loginButton = new JButton("Login");
 		loginButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-		loginButton.addActionListener(new ActionListener() { 
-			public void actionPerformed(ActionEvent e) { 
-				int rsUserid = App.DatabaseManager.login(emailField.getText(), passwordField.getText());
-				
-				if(rsUserid != -1) {
-					JFrame nextFrame = new MainFrame("Icebreak", rsUserid);
-					nextFrame.setVisible(true);
-					dispose();
-				}else {
-					JOptionPane.showMessageDialog(pane, "Incorrect password for " + emailField.getText() + ". Please try again.");
-				}
-			} 
+		loginButton.addActionListener(e -> {
+			int rsUserid = App.DatabaseManager.login(emailField.getText(), passwordField.getText());
+
+			if(rsUserid != -1) {
+				JFrame nextFrame = new MainFrame("Icebreak", rsUserid);
+				nextFrame.setVisible(true);
+				dispose();
+			}else {
+				JOptionPane.showMessageDialog(pane, "Incorrect password for " + emailField.getText() + ". Please try again.");
+			}
 		});
         pane.add(loginButton);
         
@@ -57,17 +55,13 @@ public class LoginFrame extends JFrame {
 		JButton signupButton = new JButton("Sign Up");
 		signupButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         pane.add(signupButton);
-        signupButton.addActionListener(new ActionListener() {
-
-		    @Override
-		    public void actionPerformed(ActionEvent e) {
-		    	JFrame frame = new SignupFrame("Icebreak");
-				frame.setSize(750, 300);
-				frame.setResizable(false);
-				frame.setLocationRelativeTo(null);
-				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-				frame.setVisible(true);
-		    }
+        signupButton.addActionListener(e -> {
+			JFrame frame = new SignupFrame("Icebreak");
+			frame.setSize(750, 300);
+			frame.setResizable(false);
+			frame.setLocationRelativeTo(null);
+			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+			frame.setVisible(true);
 		});
         
     }
