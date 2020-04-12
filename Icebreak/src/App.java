@@ -18,8 +18,8 @@ public class App {
 		
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-//				JFrame frame = new LoginFrame("Icebreak");
-				JFrame frame = new MainFrame("Icebreak", 4000);
+				JFrame frame = new LoginFrame("Icebreak");
+//				JFrame frame = new MainFrame("Icebreak", 4000);
 				frame.setSize(750, 500);
 				frame.setResizable(false);
 				frame.setLocationRelativeTo(null);
@@ -41,11 +41,11 @@ public class App {
 					String username = "cs421g07";
 					String password = "dbdbSQSQ2007";
 					
-					Class.forName("org.postgresql.Driver");
+//					Class.forName("org.postgresql.Driver");
 					
 					con = DriverManager.getConnection(url, username, password);
 					System.out.println("Successfully connected to database");
-				} catch(SQLException | ClassNotFoundException e) {
+				} catch(SQLException e) {
 					e.printStackTrace();
 					System.out.println("Error connecting to database");
 				}
@@ -55,7 +55,8 @@ public class App {
 		}
 		
 		public static int login(String email, String password) {
-			if(!email.isBlank() && !email.isEmpty() && !password.isBlank() && !password.isEmpty()) {
+//			if(!email.isBlank() && !email.isEmpty() && !password.isBlank() && !password.isEmpty()) {
+			if(!email.isEmpty()  && !password.isEmpty()) {
 				try {
 					Statement stmt;
 					stmt = con.createStatement();
