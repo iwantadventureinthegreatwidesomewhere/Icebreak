@@ -338,20 +338,21 @@ public class SignupFrame extends JFrame {
 	}
 	
 	private static boolean createUserSQL(){
-		System.out.println("	private static Date birthDate;\r\n" + birthDate+
-				"	private static String name;\r\n" + name+
-				"	private static String email;\r\n" + email+
-				"	private static String password;\r\n" + password+
-				"	private static String ppPath;\r\n" + ppPath+
-				"	private static Boolean isActive = true;\r\n" + isActive+
-				"	private static Boolean isMatchMaking = true;\r\n" + isMatchMaking+
-				"	private static String location;\r\n" + location+
-				"	private static String error = \"Not found\";\r\n" + error+
-				"	private static Date dateCreated;\r\n" + dateCreated+
-				"	private static Time timeCreated;\r\n" + timeCreated+
-				"	private static String preference;\r\n" + preference+
-				"	private static String interest = \"football\";\r\n" + interest+
-				"	private static String interestType = \"sport\";" + interestType);
+		System.out.println("Signed up user with\n" +
+				"\tbirthDate: " + birthDate+
+				"\tname: " + name+
+				"\temail: " + email+
+				"\tpassword: " + password+
+				"\tppPath: " + ppPath+
+				"\tisActive = true: " + isActive+
+				"\tisMatchMaking = true: " + isMatchMaking+
+				"\tlocation: " + location+
+				"\terror = \"Not found\": " + error+
+				"\tdateCreated: " + dateCreated+
+				"\ttimeCreated: " + timeCreated+
+				"\tpreference: " + preference+
+				"\tinterest: " + interest+
+				"\tinterestType: " + interestType);
 		DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 		LocalDateTime now = LocalDateTime.now();
 		dateCreated = java.sql.Date.valueOf(format.format(now));

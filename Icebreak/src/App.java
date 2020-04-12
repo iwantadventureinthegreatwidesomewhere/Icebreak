@@ -163,17 +163,34 @@ public class App {
 				if(matchedUsers.next()) {
 					//found a match
 					int matchedUserid = matchedUsers.getInt("userid");
-					
-					Random random = new Random();
-					int chatid = random.nextInt();
-					
+
+					con.createStatement();
+					sql = "SELECT MAX(chatid) " +
+							"FROM chats;";
+					PreparedStatement ps = con.prepareStatement(sql);
+
+					ResultSet max = ps.executeQuery();
+					int chatid = new Random().nextInt(Integer.MAX_VALUE);
+
+					try {
+						if (max.next()) {
+							chatid = max.getInt("max");
+							chatid++;
+						}
+					} catch (Exception e) {
+						System.out.println("Exception getting max chatid:");
+						e.printStackTrace();
+					}
+
+
 					//inserts a new chat into the Chats table
 					con.createStatement();
-					sql = "INSERT INTO Chats (chatid, date_time_created, is_active)"
-							+ " VALUES (?, ?, true)";
+					sql = "INSERT INTO Chats (chatid, date_time_created, is_active, requestid)"
+							+ " VALUES (?, ?, true, ?)";
 					preparedStatement = con.prepareStatement(sql);
 					preparedStatement.setInt(1, chatid);
 					preparedStatement.setDate(2, Date.valueOf(java.time.LocalDate.now()));
+					preparedStatement.setInt(3, userid);
 					preparedStatement.executeUpdate();
 					
 					//inserts the matched users into the Participates table
@@ -221,24 +238,51 @@ public class App {
 					List<String> threeIcebreakerTopics = icebreakerTopics.stream().limit(3).collect(Collectors.toList());
 
 					con.createStatement();
-					sql = "INSERT INTO Conversations (chatid, conversation_number)"
-							+ " VALUES (?, 1), (?, 2), (?, 3)";
+					sql = "SELECT MAX(conversation_number) " +
+							"FROM conversations;";
+					ps = con.prepareStatement(sql);
+
+					max = ps.executeQuery();
+					int cnum1, cnum2, cnum3;
+					cnum1 = cnum2 = cnum3 = 9999;
+
+					try {
+						if (max.next()) {
+							cnum1 = max.getInt("max");
+							cnum1++;
+							cnum2 = cnum1 + 1;
+							cnum3 = cnum1 + 2;
+						}
+					} catch (Exception e) {
+						System.out.println("Exception getting max userid:");
+						e.printStackTrace();
+					}
+
+					con.createStatement();
+					sql = "INSERT INTO Conversations (conversation_number, chatid)"
+							+ " VALUES (?, ?), (?, ?), (?, ?)";
 					preparedStatement = con.prepareStatement(sql);
-					preparedStatement.setInt(1, chatid);
 					preparedStatement.setInt(2, chatid);
-					preparedStatement.setInt(3, chatid);
+					preparedStatement.setInt(1, cnum1);
+					preparedStatement.setInt(4, chatid);
+					preparedStatement.setInt(3, cnum2);
+					preparedStatement.setInt(6, chatid);
+					preparedStatement.setInt(5, cnum3);
 					preparedStatement.executeUpdate();
 
 					con.createStatement();
-					sql = "INSERT INTO Icebreakers (chatid, conversation_number, subject, time_duration)"
-							+ " VALUES (?, 1, ?, 60), (?, 2, ?, 60), (?, 3, ?, 60)";
+					sql = "INSERT INTO Icebreakers (conversation_number, chatid, subject, time_duration)"
+							+ " VALUES (?, ?, ?, 60), (?, ?, ?, 60), (?, ?, ?, 60)";
 					preparedStatement = con.prepareStatement(sql);
-					preparedStatement.setInt(1, chatid);
-					preparedStatement.setString(2, threeIcebreakerTopics.get(0));
-					preparedStatement.setInt(3, chatid);
-					preparedStatement.setString(4, threeIcebreakerTopics.get(1));
+					preparedStatement.setInt(2, chatid);
+					preparedStatement.setInt(1, cnum1);
+					preparedStatement.setString(3, threeIcebreakerTopics.get(0));
 					preparedStatement.setInt(5, chatid);
-					preparedStatement.setString(6, threeIcebreakerTopics.get(2));
+					preparedStatement.setInt(4, cnum2);
+					preparedStatement.setString(6, threeIcebreakerTopics.get(1));
+					preparedStatement.setInt(8, chatid);
+					preparedStatement.setInt(7, cnum3);
+					preparedStatement.setString(9, threeIcebreakerTopics.get(2));
 					preparedStatement.executeUpdate();
 
 					System.out.println("Match was found");
@@ -315,6 +359,7 @@ public class App {
 				}
 			} catch (SQLException e) {
 				System.out.println("Error searching for a match");
+				e.printStackTrace();
 				return -1;
 			}
 		}
@@ -380,22 +425,55 @@ public class App {
 						+ " ORDER BY msgid";
 				preparedStatement = con.prepareStatement(sql);
 				preparedStatement.setInt(1, chatid);
-//				preparedStatement.setString(2, "sent");
 				ResultSet rsOrderedMessages = preparedStatement.executeQuery();
-				
+
+				con.createStatement();
+				sql = "SELECT MAX(conversation_number) " +
+						"FROM conversations";
+				preparedStatement = con.prepareStatement(sql);
+				ResultSet max = preparedStatement.executeQuery();
+
+				int conversation_number = 0;
+
+				if (max.next()) {
+					conversation_number = max.getInt("max");
+					conversation_number++;
+				}
+
 				List<Message> orderedMessages = new ArrayList<>();
 				while(rsOrderedMessages.next()) {
 					int msgid = rsOrderedMessages.getInt("msgid");
 					String content = rsOrderedMessages.getString("content");
 					String name = rsOrderedMessages.getString("name");
-					int conversation_number = rsOrderedMessages.getInt("conversation_number");
+					conversation_number = rsOrderedMessages.getInt("conversation_number");
 					
-					orderedMessages.add(new Message(msgid, content, name, chatid, conversation_number));
+					orderedMessages.add(new Message(msgid, content, name, chatid));
 				}
 				
-				Chat chat = new Chat(chatid, matchedName, orderedMessages);
-				
-				System.out.println("Sucessfully loaded chat with " + matchedName);
+				Chat chat = new Chat(chatid, matchedName, orderedMessages, conversation_number);
+
+				con.createStatement();
+				sql = "SELECT EXISTS(SELECT 1 FROM conversations WHERE conversation_number = ?)";
+				preparedStatement = con.prepareStatement(sql);
+				preparedStatement.setInt(1, conversation_number);
+
+				ResultSet rs = preparedStatement.executeQuery();
+				boolean newConvo = false;
+
+				if (rs.next()) {
+					newConvo = !rs.getBoolean(1);
+				}
+
+				if (newConvo) {
+					con.createStatement();
+					sql = "INSERT INTO conversations VALUES (?, ?)";
+					preparedStatement = con.prepareStatement(sql);
+					preparedStatement.setInt(1, conversation_number);
+					preparedStatement.setInt(2, chatid);
+					preparedStatement.executeUpdate();
+					System.out.println("Sucessfully loaded chat with " + matchedName);
+				}
+
 				return chat;
 			} catch (SQLException e) {
 				System.out.println("Error loading some chat");
@@ -437,9 +515,11 @@ public class App {
 				preparedStatement.executeUpdate();
 				
 				System.out.println("Successfully sent message");
+
 				return true;
 			} catch (SQLException e) {
 				System.out.println("Error sending message" + e.getMessage());
+				e.printStackTrace();
 				return false;
 			}
 		}
@@ -461,12 +541,14 @@ public class App {
 	public static class Chat {
 		public int chatid;
 		public String recipientName;
+		public int conversation_number;
 		public List<Message> orderedMessages;
 		
-		public Chat(int chatid, String recipientName, List<Message> orderedMessages) {
+		public Chat(int chatid, String recipientName, List<Message> orderedMessages, int conversation_number) {
 			this.chatid = chatid;
 			this.recipientName = recipientName;
 			this.orderedMessages = orderedMessages;
+			this.conversation_number = conversation_number;
 		}
 	}
 	
@@ -475,14 +557,12 @@ public class App {
 		public String content;
 		public String sender;
 		public int chatid;
-		public int conversation_number;
 		
-		public Message(int msgid, String content, String sender, int chatid, int conversation_number) {
+		public Message(int msgid, String content, String sender, int chatid) {
 			this.msgid = msgid;
 			this.content = content;
 			this.sender = sender;
 			this.chatid = chatid;
-			this.conversation_number = conversation_number;
 		}
 	}
 }

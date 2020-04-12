@@ -1,26 +1,18 @@
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.List;
 
-import javax.swing.BoxLayout;
-import javax.swing.DefaultListModel;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
+import javax.swing.*;
 
 
 public class MainFrame extends JFrame {
-	public static List<Integer> chatidList = new ArrayList<Integer>();
-	public static int userid;
+
+	public static List<Integer> chatidList = new ArrayList<>();
+	public int userid;
+
 	public MainFrame(String title, int userid) {
 		super(title);
 		this.userid = userid;
@@ -32,11 +24,11 @@ public class MainFrame extends JFrame {
 		Container pane = getContentPane();
 		pane.setLayout(new BoxLayout(pane, BoxLayout.Y_AXIS));
 		List<Integer> chatids = App.DatabaseManager.getAllChats(userid);
-		DefaultListModel<String> chatList = new DefaultListModel<String>();
+		DefaultListModel<String> chatList = new DefaultListModel<>();
 		if (chatids != null) {
 			chatidList = chatids;
 			for (Integer id : chatids) {
-				App.Chat chat = App.DatabaseManager.refreshChat(userid, Integer.valueOf(id));
+				App.Chat chat = App.DatabaseManager.refreshChat(userid, id);
 				if (chat == null) continue;
 				chatList.addElement(chat.recipientName);
 			}
@@ -48,7 +40,7 @@ public class MainFrame extends JFrame {
 			int chatid = App.DatabaseManager.match(userid);
 
 			if(chatid != -1) {
-				//load chat and launch ChatFrame
+				new ChatFrame("Icebreaker", userid, chatid);
 			}else {
 				JOptionPane.showMessageDialog(pane, "Failed to find a match.");
 			}
@@ -57,19 +49,19 @@ public class MainFrame extends JFrame {
 		JLabel label = new JLabel("Recent chats");
 		pane.add(label);
 		pane.add(createChatList(chatList));
-		
+		//TODO: Make sure the connection to db is closed when window is closed
 	}
 
 	private JList createChatList(DefaultListModel<String> chatList) {
-		JList<String> chatListPanel = new JList<String>(chatList);
+		JList<String> chatListPanel = new JList<>(chatList);
 		chatListPanel.addMouseListener(new MouseAdapter() {
 		    public void mouseClicked(MouseEvent evt) {
-		        JList list = (JList)((EventObject) evt).getSource();
+		        JList list = (JList) evt.getSource();
 		        if (evt.getClickCount() == 2) {
 
 		            // Double-click detected
 		            int index = list.locationToIndex(evt.getPoint());
-		            ChatFrame chatFrame = new ChatFrame(chatList.elementAt(index), userid, chatidList.get(index));
+		            new ChatFrame(chatList.elementAt(index), userid, chatidList.get(index));
 		        } else if (evt.getClickCount() == 3) {
 
 		            // Triple-click detected
@@ -81,5 +73,4 @@ public class MainFrame extends JFrame {
 		chatListPanel.setBounds(100, 100, 300, 550);
 		return chatListPanel ;
 	}
-
 }

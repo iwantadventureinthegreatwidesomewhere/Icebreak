@@ -18,9 +18,10 @@ import javax.swing.Timer;
 public class ChatFrame extends JFrame {
 	private static Container currentPane;
 	private static String currentMessage;
-	private static int userid;
-	private static int chatid;
-	private static int cid;
+	private  int userid;
+	private  int chatid;
+	private  int cid;
+
 	public ChatFrame(String title, int userid, int chatid) {
 		super(title);
 		this.userid = userid;
@@ -33,12 +34,13 @@ public class ChatFrame extends JFrame {
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setVisible(true);
 		App.Chat currentChat = App.DatabaseManager.refreshChat(userid, chatid);
+		cid = currentChat.conversation_number;
 		List<App.Message> msgs = currentChat.orderedMessages;
 		pane.add(displayMessages(msgs));
 		pane.add(createCurrentMessagePanel());
 	}
 	
-	public static JList<String> displayMessages(List<App.Message> msgs) {
+	public JList<String> displayMessages(List<App.Message> msgs) {
         DefaultListModel<String> l1 = new DefaultListModel<>();  
         for (App.Message m : msgs) {
         	l1.addElement(m.sender + ": " + m.content);        	
@@ -46,28 +48,24 @@ public class ChatFrame extends JFrame {
         JList<String> msgList = new JList<>(l1);
         msgList.setBounds(100, 100, 200, 200);
 
-        Timer timer = new Timer(1000, new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-        		App.Chat currentChat = App.DatabaseManager.refreshChat(userid, chatid);
-        		List<App.Message> msgs = currentChat.orderedMessages;
-//                ArrayList<String> l1 = new ArrayList<String>(); 
-                String[] messages = new String[msgs.size()];
-                int i = 0;
-                for (App.Message m : msgs) {
-                	messages[i] = m.sender + ": " + m.content;
-//                	l1.add(m.sender + ": " + m.content);   
-                	i++;
-                }
-        		cid = msgs.get(msgs.size() - 1).conversation_number;
-            	msgList.setListData(messages);
-            }
-        });
-		cid = msgs.get(msgs.size() - 1).conversation_number;
-        timer.start();
+        Timer timer = new Timer(1000, evt -> {
+			App.Chat currentChat = App.DatabaseManager.refreshChat(this.userid, this.chatid);
+			List<App.Message> msgs1 = currentChat.orderedMessages;
+			String[] messages = new String[msgs1.size()];
+			int i = 0;
+			for (App.Message m : msgs1) {
+				messages[i] = m.sender + ": " + m.content;
+				i++;
+			}
+			msgList.setListData(messages);
+		});
+		if (!msgs.isEmpty()) {
+			timer.start();
+		}
         return msgList;
 	}
 	
-	private static Container createCurrentMessagePanel() {
+	private Container createCurrentMessagePanel() {
 
 		Container cont = new Container();
 		cont.setLayout(new BoxLayout(cont, BoxLayout.X_AXIS));
@@ -93,14 +91,10 @@ public class ChatFrame extends JFrame {
 			}
 		});
 		JButton sendButton = new JButton("Send");
-		sendButton.addActionListener(new ActionListener() {
-
-		    @Override
-		    public void actionPerformed(ActionEvent e) {
-		    	App.DatabaseManager.sendMessage(userid, chatid, currentMessage, cid);
-		    	currentMessage = "";
-		    	messageField.setText("");
-		    }
+		sendButton.addActionListener(e -> {
+			App.DatabaseManager.sendMessage(userid, chatid, currentMessage, cid);
+			currentMessage = "";
+			messageField.setText(currentMessage);
 		});
 		JPanel messagePanel = new JPanel();
 		messagePanel.setAlignmentX(Component.CENTER_ALIGNMENT);
