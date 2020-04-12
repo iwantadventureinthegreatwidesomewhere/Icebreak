@@ -20,6 +20,7 @@ public class ChatFrame extends JFrame {
 	private static String currentMessage;
 	private static int userid;
 	private static int chatid;
+	private static int cid;
 	public ChatFrame(String title, int userid, int chatid) {
 		super(title);
 		this.userid = userid;
@@ -57,9 +58,11 @@ public class ChatFrame extends JFrame {
 //                	l1.add(m.sender + ": " + m.content);   
                 	i++;
                 }
+        		cid = msgs.get(msgs.size() - 1).conversation_number;
             	msgList.setListData(messages);
             }
         });
+		cid = msgs.get(msgs.size() - 1).conversation_number;
         timer.start();
         return msgList;
 	}
@@ -94,12 +97,11 @@ public class ChatFrame extends JFrame {
 
 		    @Override
 		    public void actionPerformed(ActionEvent e) {
-		    	App.DatabaseManager.sendMessage(userid, chatid);
+		    	App.DatabaseManager.sendMessage(userid, chatid, currentMessage, cid);
 		    	currentMessage = "";
 		    	messageField.setText("");
 		    }
 		});
-
 		JPanel messagePanel = new JPanel();
 		messagePanel.setAlignmentX(Component.CENTER_ALIGNMENT);
 		messagePanel.add(messageField);

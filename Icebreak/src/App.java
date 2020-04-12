@@ -372,21 +372,14 @@ public class App {
 				}
 				
 				con.createStatement();
-//				sql = "SELECT m.msgid, m.content, u.name, c.conversation_number " +
-//						"FROM Conversations c, Messages m, Users u"
-//						+ " WHERE c.chatid = m.chatid"
-//						+ " AND m.userid = u.userid"
-//						+ " AND c.chatid = ?"
-//						+ " AND m.status = ?"
-//						+ " ORDER BY msgid";
-				sql = "SELECT m.msgid, m.content, m.userid, u.name " +
-						"FROM Messages m, Users u"
-						+ " WHERE m.userid = u.userid"
+				sql = "SELECT m.msgid, m.content, m.userid, u.name, c.conversation_number " 
+						+ " FROM Conversations c, Messages m, Users u"
+						+ " WHERE c.chatid = m.chatid"
+						+ " AND m.userid = u.userid"
 						+ " AND m.chatid = ?"
 						+ " ORDER BY msgid";
 				preparedStatement = con.prepareStatement(sql);
 				preparedStatement.setInt(1, chatid);
-				System.out.println("chatid " + chatid);
 //				preparedStatement.setString(2, "sent");
 				ResultSet rsOrderedMessages = preparedStatement.executeQuery();
 				
@@ -395,8 +388,7 @@ public class App {
 					int msgid = rsOrderedMessages.getInt("msgid");
 					String content = rsOrderedMessages.getString("content");
 					String name = rsOrderedMessages.getString("name");
-//					int conversation_number = rsOrderedMessages.getInt("conversation_number");
-					int conversation_number = 0;
+					int conversation_number = rsOrderedMessages.getInt("conversation_number");
 					
 					orderedMessages.add(new Message(msgid, content, name, chatid, conversation_number));
 				}
@@ -419,9 +411,8 @@ public class App {
 				PreparedStatement preparedStatement;
 				
 				sql = "SELECT MAX(msgid) " +
-						"FROM Messages WHERE chatid = ?";
+						"FROM Messages";
 				preparedStatement = con.prepareStatement(sql);
-				preparedStatement.setInt(1, chatid);
 				ResultSet maxMsgid = preparedStatement.executeQuery();
 				
 				int msgid = 9999;
@@ -433,7 +424,7 @@ public class App {
 				
 				//inserts the new message into the Messages table
 				con.createStatement();
-				sql = "INSERT INTO Messages (msgid, status, ​timestamp, content, userid, chatid, conversation_number)"
+				sql = "INSERT INTO Messages (msgid, status, timestamp, content, userid, chatid, conversation_number)"
 						+ " VALUES (?, ?, ?, ?, ?, ?, ?)";
 				preparedStatement = con.prepareStatement(sql);
 				preparedStatement.setInt(1, msgid);
@@ -448,7 +439,7 @@ public class App {
 				System.out.println("Successfully sent message");
 				return true;
 			} catch (SQLException e) {
-				System.out.println("Error sending message");
+				System.out.println("Error sending message" + e.getMessage());
 				return false;
 			}
 		}
