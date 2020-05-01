@@ -1,0 +1,3 @@
+# Icebreak
+
+This application stores the information and constraints required to host an online social dating platform that focuses on breaking the conversational “ice” between users that are matched by our application. The application is inspired by the concept of speed-dating, with the intention that users are matched with many different people according to their selected interests and dating preferences and share short conversations centered around pre-selected icebreaker topics that matched users are both interested in. Users involved in matches they deemed successful can request to connect with their match to deepen their relationship and continue to chat.
